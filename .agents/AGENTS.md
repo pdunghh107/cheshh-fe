@@ -101,3 +101,55 @@ const {
 
 - **Axios Instance & Interceptor:** Sử dụng Axios instance đã cấu hình sẵn Interceptor (để tự động đính kèm Token/Refresh Token vào Header).
 - **Trạng thái UI:** Xử lý trạng thái loading, error, success rõ ràng trên UI cho mọi luồng gọi API.
+
+### 5.5. Bắt buộc có Usage Comments trong mọi file TSX
+
+- **Quy tắc bắt buộc:** Mỗi khi tạo mới hoặc cập nhật một file `.tsx` (Component, Page, Layout, Provider...), **BẮT BUỘC** phải có một khối JSDoc/Block comment ở đầu file mô tả mục đích và **cách sử dụng (Usage example)** cụ thể.
+- **Mục tiêu:** Giúp lập trình viên khác hoặc các agent sau có thể dễ dàng hiểu props, context cần thiết và copy/paste cách dùng ngay lập tức mà không cần đọc hết code logic bên dưới.
+
+**Ví dụ chuẩn:**
+
+```tsx
+/**
+ * Button Component
+ *
+ * @description Button chuẩn dùng trong toàn bộ ứng dụng, hỗ trợ nhiều biến thể và trạng thái loading.
+ *
+ * @example
+ * // Usage cơ bản:
+ * import { Button } from '@/components/Button';
+ *
+ * <Button variant="primary" size="medium" onClick={handleClick}>
+ *   Chơi ngay
+ * </Button>
+ *
+ * // Usage với icon và loading:
+ * <Button variant="secondary" isLoading disabled>
+ *   Đang tìm trận...
+ * </Button>
+ */
+```
+
+### 5.6. Quy chuẩn Router (React Router v7 / v8)
+
+- **Cấu hình tập trung:** Toàn bộ route phải được định nghĩa tập trung trong thư mục `src/routes/` thay vì viết rải rác.
+- **Sử dụng Data Router (`createBrowserRouter` + `RouterProvider`):** Khởi tạo router bằng `createBrowserRouter` và cung cấp qua `<RouterProvider router={router} />` trong `App.tsx` hoặc `main.tsx`.
+- **Tách Path Constants (`paths.ts`):** Không hardcode chuỗi đường dẫn (e.g. `"/login"`, `"/game/:id"`) trực tiếp trong component. Luôn định nghĩa hằng số trong `src/routes/paths.ts` (ví dụ: `ROUTE_PATHS.LOGIN`, `ROUTE_PATHS.GAME(id)`).
+- **Phân tách Route Public / Protected:**
+  - Route công khai: Login, Register, Landing Page, Not Found (404).
+  - Route bảo vệ (`ProtectedRoute`): Lobby, Matchmaking, Realtime Chess Room (`/game/:gameId`), Profile, Leaderboard (yêu cầu kiểm tra token xác thực/Redux auth state trước khi render `Outlet`).
+- **Layouts & Nested Routes:** Tận dụng `Outlet` kết hợp các Layout riêng biệt (ví dụ: `MainLayout` cho giao diện có thanh điều hướng/chơi cờ và `AuthLayout` cho màn hình đăng nhập/đăng ký).
+- **Lazy Loading:** Bắt buộc áp dụng `React.lazy()` hoặc route `lazy` loader cho các trang chính (đặc biệt là Bàn cờ Realtime Game room) để tối ưu code splitting và thời gian tải trang ban đầu.
+
+### 5.7. Quy chuẩn Path Alias (`@/*`)
+
+- **Bắt buộc:** Luôn sử dụng path alias `@/*` trỏ tới thư mục `src/*` cho tất cả các câu lệnh `import` trong toàn bộ dự án.
+- **Không dùng đường dẫn tương đối sâu:** Tránh sử dụng relative path quá 1 cấp (như `../../commons/colors`, `../../../features/...`) để tránh lỗi sai lệch đường dẫn khi di chuyển file và giữ code luôn sạch sẽ, dễ đọc.
+- **Ví dụ chuẩn:**
+  ```typescript
+  import { colors } from "@/commons/colors";
+  import { fontSizes, fontWeights } from "@/commons/fonts";
+  import { useAuth } from "@/features/auth/AuthContext";
+  import { ROUTE_PATHS } from "@/routes/paths";
+  ```
+

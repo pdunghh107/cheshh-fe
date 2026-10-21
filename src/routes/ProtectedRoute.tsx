@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
+
 import { useAuth } from "@/features/auth/AuthContext";
 import { ROUTE_PATHS } from "@/routes/paths";
 

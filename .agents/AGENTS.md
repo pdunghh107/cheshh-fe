@@ -153,3 +153,23 @@ const {
   import { ROUTE_PATHS } from "@/routes/paths";
   ```
 
+### 5.8. Quy chuẩn Auto-sort Import & CSS Order
+
+- **Auto-sort Import (ESLint):** Dự án sử dụng `eslint-plugin-simple-import-sort`. Các import luôn được tự động phân nhóm theo thứ tự:
+  1. Thư viện ngoài / React (`react`, `react-router`, `styled-components`...)
+  2. Path alias nội bộ (`@/*`)
+  3. Đường dẫn tương đối (`./`, `../`)
+  4. Stylesheet (`.css`)
+- **Auto-sort CSS Order (Stylelint):** Sử dụng `stylelint` với `stylelint-order` và `postcss-styled-syntax` để tự động sắp xếp các thuộc tính CSS bên trong Styled Components theo 5 tầng logic chuẩn quốc tế:
+  1. **Positioning:** `position`, `top`, `right`, `bottom`, `left`, `z-index`
+  2. **Display & Box Model:** `display`, `flex`, `grid`, `width`, `height`, `margin`, `padding`
+  3. **Typography:** `font-family`, `font-size`, `font-weight`, `line-height`, `text-align`
+  4. **Visual & Colors:** `background`, `color`, `border`, `border-radius`, `box-shadow`
+  5. **Animation & Interaction:** `cursor`, `transition`, `transform`, `animation`
+- **Lệnh thực thi:**
+  - `pnpm run format`: Chạy tự động sort cho cả Import và CSS trên toàn bộ dự án.
+  - `pnpm run lint:fix`: Sắp xếp và sửa lỗi import.
+  - `pnpm run lint:css`: Sắp xếp và chuẩn hóa thuộc tính CSS trong Styled Components.
+  - Tự động thực thi mỗi khi nhấn **Save** (`Ctrl + S`) trong VS Code thông qua cấu hình `.vscode/settings.json`.
+
+

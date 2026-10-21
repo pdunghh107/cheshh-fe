@@ -1,9 +1,10 @@
 import React from "react";
+import { useLocation,useNavigate } from "react-router";
 import styled, { keyframes } from "styled-components";
+
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
 import { useAuth } from "@/features/auth/AuthContext";
-import { useNavigate, useLocation } from "react-router";
 import { ROUTE_PATHS } from "@/routes/paths";
 
 
@@ -107,8 +108,8 @@ const pulseBorder = keyframes`
 const StyledInterruptContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   min-height: 100vh;
   padding: 24px;
   background: radial-gradient(circle at 50% 10%, #2b1f14 0%, ${colors.neutral.darkest} 75%);
@@ -121,11 +122,11 @@ const StyledAlertCard = styled.div`
   gap: 16px;
   width: 100%;
   max-width: 480px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
   background-color: rgba(43, 31, 20, 0.9);
   border: 1px solid ${colors.warning.base};
   border-radius: 12px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
   animation: ${pulseBorder} 2s infinite ease-out;
 `;
 
@@ -146,10 +147,10 @@ const StyledAlertHeading = styled.span`
 `;
 
 const StyledAlertDescription = styled.p`
-  font-size: ${fontSizes.small};
-  color: ${colors.neutral.light};
   margin: 0;
+  font-size: ${fontSizes.small};
   line-height: 1.5;
+  color: ${colors.neutral.light};
 
   strong {
     color: ${colors.warning.lightest};
@@ -157,40 +158,40 @@ const StyledAlertDescription = styled.p`
 `;
 
 const StyledFocusedFormCard = styled.form`
-  width: 100%;
-  max-width: 480px;
-  background-color: ${colors.neutral.dark};
-  border: 1px solid ${colors.warning.dark};
-  border-radius: 16px;
-  padding: 36px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
+  max-width: 480px;
+  padding: 36px;
+  background-color: ${colors.neutral.dark};
+  border: 1px solid ${colors.warning.dark};
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
 `;
 
 const StyledFormHeader = styled.div`
-  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  text-align: center;
 `;
 
 const StyledBadge = styled.span`
-  background-color: ${colors.warning.darkest};
-  color: ${colors.warning.light};
+  padding: 4px 12px;
   font-size: ${fontSizes.small};
   font-weight: ${fontWeights.semibold};
-  padding: 4px 12px;
-  border-radius: 9999px;
+  background-color: ${colors.warning.darkest};
+  color: ${colors.warning.light};
   border: 1px solid ${colors.warning.dark};
+  border-radius: 9999px;
 `;
 
 const StyledFormTitle = styled.h2`
+  margin: 0;
   font-size: ${fontSizes.xxlarge};
   font-weight: ${fontWeights.bold};
-  margin: 0;
   color: ${colors.neutral.lightest};
 `;
 
@@ -210,9 +211,9 @@ const StyledInput = styled.input`
   padding: 12px 16px;
   font-size: ${fontSizes.base};
   background-color: ${colors.neutral.darkest};
+  color: ${colors.neutral.lightest};
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  color: ${colors.neutral.lightest};
   outline: none;
   transition: all 0.2s;
 
@@ -233,16 +234,16 @@ const StyledSubmitButton = styled.button`
   padding: 14px 20px;
   font-size: ${fontSizes.large};
   font-weight: ${fontWeights.bold};
-  color: #ffffff;
   background: linear-gradient(135deg, ${colors.warning.base} 0%, ${colors.warning.dark} 100%);
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(244, 155, 21, 0.4);
+    transform: translateY(-2px);
   }
 
   &:active {
@@ -254,8 +255,8 @@ const StyledCancelButton = styled.button`
   padding: 10px 16px;
   font-size: ${fontSizes.small};
   font-weight: ${fontWeights.medium};
-  color: ${colors.neutral.base};
   background: transparent;
+  color: ${colors.neutral.base};
   border: none;
   cursor: pointer;
   transition: color 0.2s;

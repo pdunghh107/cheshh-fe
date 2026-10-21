@@ -1,9 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router";
 import styled from "styled-components";
+
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
 import { useAuth } from "@/features/auth/AuthContext";
-import { useNavigate } from "react-router";
 import { ROUTE_PATHS } from "@/routes/paths";
 
 
@@ -78,57 +79,57 @@ export const InitialLoginView: React.FC = () => {
 const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   min-height: 100vh;
   padding: 24px;
+  font-family: inherit;
   background: radial-gradient(circle at 50% 20%, #1e2430 0%, ${colors.neutral.darkest} 80%);
   color: ${colors.neutral.lightest};
-  font-family: inherit;
 `;
 
 const StyledHeroBadge = styled.div`
+  margin-bottom: 16px;
   padding: 6px 14px;
-  background-color: ${colors.primary.darkest};
-  color: ${colors.primary.light};
   font-size: ${fontSizes.small};
   font-weight: ${fontWeights.semibold};
-  border-radius: 9999px;
-  border: 1px solid ${colors.primary.dark};
-  margin-bottom: 16px;
   letter-spacing: 0.5px;
+  background-color: ${colors.primary.darkest};
+  color: ${colors.primary.light};
+  border: 1px solid ${colors.primary.dark};
+  border-radius: 9999px;
 `;
 
 const StyledTitle = styled.h1`
+  margin: 0 0 12px;
   font-size: ${fontSizes.xxxlarge};
   font-weight: ${fontWeights.black};
-  margin: 0 0 12px;
   text-align: center;
   color: ${colors.neutral.lightest};
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 `;
 
 const StyledSubtitle = styled.p`
+  max-width: 520px;
+  margin: 0 0 32px;
   font-size: ${fontSizes.large};
   font-weight: ${fontWeights.regular};
-  color: ${colors.neutral.light};
-  margin: 0 0 32px;
-  text-align: center;
-  max-width: 520px;
   line-height: 1.6;
+  text-align: center;
+  color: ${colors.neutral.light};
 `;
 
 const StyledFormCard = styled.form`
-  width: 100%;
-  max-width: 440px;
-  background-color: ${colors.neutral.dark};
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 36px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
+  max-width: 440px;
+  padding: 36px;
+  background-color: ${colors.neutral.dark};
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
 `;
 
 const StyledInputGroup = styled.div`
@@ -147,9 +148,9 @@ const StyledInput = styled.input`
   padding: 12px 16px;
   font-size: ${fontSizes.base};
   background-color: ${colors.neutral.darkest};
+  color: ${colors.neutral.lightest};
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  color: ${colors.neutral.lightest};
   outline: none;
   transition: all 0.2s ease-in-out;
 
@@ -163,16 +164,16 @@ const StyledPrimaryButton = styled.button`
   padding: 14px 20px;
   font-size: ${fontSizes.large};
   font-weight: ${fontWeights.bold};
-  color: #ffffff;
   background: linear-gradient(135deg, ${colors.primary.base} 0%, ${colors.primary.dark} 100%);
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(56, 161, 78, 0.35);
+    transform: translateY(-2px);
   }
 
   &:active {
@@ -184,8 +185,8 @@ const StyledGuestButton = styled.button`
   padding: 12px 20px;
   font-size: ${fontSizes.base};
   font-weight: ${fontWeights.medium};
-  color: ${colors.neutral.light};
   background: transparent;
+  color: ${colors.neutral.light};
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   cursor: pointer;

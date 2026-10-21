@@ -1,6 +1,6 @@
-import path from 'path'
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import path from 'path'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/

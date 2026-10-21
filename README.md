@@ -1,78 +1,79 @@
-# React + TypeScript + Vite
+# ♟ ChessHH Front-end Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **Dự án:** Hệ thống chơi cờ vua trực tuyến thời gian thực tích hợp hệ thống xếp hạng & tính điểm Elo (Front-end Client).
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 1. Lệnh Thực Thi Dự Án (Project Scripts)
 
-## React Compiler
+Dự án sử dụng trình quản lý gói **pnpm**:
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### 🛠 Phát triển & Build
+| Lệnh | Mục đích |
+| :--- | :--- |
+| `pnpm dev` | Khởi động Local Development Server với Vite (HMR) |
+| `pnpm build` | Kiểm tra TypeScript (`tsc -b`) và đóng gói mã nguồn cho Production |
+| `pnpm preview` | Chạy thử bản build production trên môi trường local |
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+### 🧹 Kiểm tra & Tự động Định dạng (Format & Linting)
+| Lệnh | Mục đích |
+| :--- | :--- |
+| `pnpm run format` | **Chạy tự động sort cả Import và CSS** trên toàn bộ dự án |
+| `pnpm run lint:fix` | **Tự động sắp xếp Import** theo nhóm chuẩn bằng ESLint |
+| `pnpm run lint:css` | **Tự động sắp xếp thuộc tính CSS** trong Styled Components bằng Stylelint |
+| `pnpm lint` | Kiểm tra toàn bộ lỗi cú pháp và code quality mà không sửa file |
 
-## Expanding the ESLint configuration
+> **Mẹo:** VS Code đã được tích hợp sẵn qua file `.vscode/settings.json`. Mỗi khi bạn bấm **Save (`Ctrl + S`)**, Editor sẽ tự động sắp xếp Import và CSS chuẩn 100%.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📦 2. Lệnh Cài Đặt Thư Viện (Package Management)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Khi cần thêm thư viện mới vào dự án, luôn dùng **pnpm**:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Thêm thư viện chính (Dependencies)
+pnpm add <tên_gói>
 
+# Thêm thư viện cho môi trường phát triển (DevDependencies)
+pnpm add -D <tên_gói>
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🛠 3. Các Thư Viện Đang Sử Dụng (Tech Stack)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 3.1. Thư viện Chính (Dependencies)
+- **[React 19](https://react.dev/) + [React DOM 19](https://react.dev/)**: Thư viện nền tảng UI (hỗ trợ React Compiler).
+- **[React Router v8](https://reactrouter.com/)**: Định tuyến ứng dụng với Data Router API (`createBrowserRouter`, `RouterProvider`, `Navigate`, `Outlet`).
+- **[Styled Components v6](https://styled-components.com/)**: CSS-in-JS linh hoạt, quản lý theme, dynamic styling qua transient props (`$prop`).
+- **[Redux Toolkit (RTK)](https://redux-toolkit.js.org/) & [React-Redux](https://react-redux.js.org/)**: Quản lý Global State (Auth, Socket session, User profile).
+- **[React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)**: Quản lý Form hiệu năng cao kết hợp Schema Validation chặt chẽ.
+- **[@hookform/resolvers](https://github.com/react-hook-form/resolvers)**: Cầu nối tích hợp Zod vào React Hook Form.
+- **[Lucide React](https://lucide.dev/)**: Bộ Icon SVG hiện đại, tối ưu dung lượng.
 
-```
+### 3.2. Công cụ Phát triển & Định dạng (DevDependencies)
+- **[Vite 8](https://vite.dev/)**: Build tool thế hệ mới siêu nhanh.
+- **[TypeScript 5.7](https://www.typescriptlang.org/)**: Đảm bảo an toàn kiểu dữ liệu tĩnh.
+- **[ESLint 10](https://eslint.org/)** + **[eslint-plugin-simple-import-sort](https://github.com/lydell/eslint-plugin-simple-import-sort)**: Tự động gom nhóm và sắp xếp thứ tự các câu lệnh `import`/`export`.
+- **[Stylelint 17](https://stylelint.io/)** + **[stylelint-order](https://github.com/hudochenkov/stylelint-order)** + **[postcss-styled-syntax](https://github.com/hudochenkov/postcss-styled-syntax)**: Phân tích cú pháp và tự động sắp xếp thứ tự thuộc tính CSS bên trong Styled Components.
+- **[React Compiler Babel Plugin](https://react.dev/learn/react-compiler)**: Tự động tối ưu hóa re-render và memoization.
+
+---
+
+## 📐 4. Quy Chuẩn Code (Coding Standards)
+
+1. **Path Alias (`@/*`):** Luôn import qua alias `@/*` trỏ tới `src/*` (ví dụ: `import { colors } from '@/commons/colors'`).
+2. **Quy chuẩn Auto-sort Import:**
+   - Nhóm 1: React & thư viện bên ngoài (`react`, `react-router`, `styled-components`...)
+   - Nhóm 2: Path alias nội bộ (`@/*`)
+   - Nhóm 3: Đường dẫn tương đối (`./`, `../`)
+   - Nhóm 4: Stylesheet (`.css`)
+3. **Quy chuẩn Thứ tự CSS (5 tầng logic):**
+   - **Positioning:** `position`, `top`, `right`, `bottom`, `left`, `z-index`
+   - **Display & Box Model:** `display`, `flex`, `grid`, `width`, `height`, `margin`, `padding`
+   - **Typography:** `font-family`, `font-size`, `font-weight`, `line-height`, `text-align`
+   - **Visual & Colors:** `background`, `color`, `border`, `border-radius`, `box-shadow`
+   - **Animation & Interaction:** `cursor`, `transition`, `transform`, `animation`
+4. **Usage Comments trong TSX:** Mỗi file `.tsx` luôn có một khối JSDoc mô tả mục đích và ví dụ cách sử dụng (Usage example) ở đầu file.
+5. **Color & Typography System:** Sử dụng bảng màu 5 sắc độ (`lightest` -> `darkest`) tại `@/commons/colors` và typography chuẩn tại `@/commons/fonts`.

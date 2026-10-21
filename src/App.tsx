@@ -1,4 +1,5 @@
 import { RouterProvider } from "react-router";
+
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { router } from "@/routes";
 

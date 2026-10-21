@@ -1,8 +1,9 @@
 import { createBrowserRouter, Navigate } from "react-router";
+
 import { LoginPage } from "@/features/auth/LoginPage";
 import { PlayChessPage } from "@/features/game/PlayChessPage";
-import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { ROUTE_PATHS } from "@/routes/paths";
+import { ProtectedRoute } from "@/routes/ProtectedRoute";
 
 
 /**

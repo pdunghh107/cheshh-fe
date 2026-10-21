@@ -1,9 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router";
 import styled from "styled-components";
+
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
 import { useAuth } from "@/features/auth/AuthContext";
-import { useNavigate } from "react-router";
 import { ROUTE_PATHS } from "@/routes/paths";
 
 /**
@@ -164,21 +165,21 @@ export default PlayChessPage;
 
 // Styled Components
 const StyledGameLayout = styled.div`
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   background-color: ${colors.neutral.darkest};
   color: ${colors.neutral.lightest};
 `;
 
 const StyledNavbar = styled.nav`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   height: 60px;
+  padding: 0 24px;
   background-color: ${colors.neutral.dark};
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
 `;
 
 const StyledBrand = styled.div`
@@ -200,34 +201,34 @@ const StyledPlayerBadge = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: rgba(255, 255, 255, 0.06);
   padding: 6px 12px;
-  border-radius: 8px;
   font-size: ${fontSizes.small};
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
 `;
 
 const StyledEloTag = styled.span`
+  padding: 2px 6px;
+  font-weight: ${fontWeights.semibold};
   background-color: ${colors.primary.darkest};
   color: ${colors.primary.light};
-  padding: 2px 6px;
   border-radius: 4px;
-  font-weight: ${fontWeights.semibold};
 `;
 
 const StyledLogoutBtn = styled.button`
+  padding: 6px 12px;
+  font-size: ${fontSizes.small};
   background: transparent;
   color: ${colors.neutral.light};
   border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 6px 12px;
   border-radius: 6px;
-  font-size: ${fontSizes.small};
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
     background-color: ${colors.danger.darkest};
-    border-color: ${colors.danger.dark};
     color: ${colors.danger.light};
+    border-color: ${colors.danger.dark};
   }
 `;
 
@@ -255,27 +256,27 @@ const StyledPlayerBar = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: ${colors.neutral.dark};
   padding: 10px 16px;
-  border-radius: 10px;
+  background-color: ${colors.neutral.dark};
   border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
 `;
 
 const StyledAvatar = styled.div<{ $color: string }>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
-  background-color: ${(props) => props.$color};
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 18px;
+  background-color: ${(props) => props.$color};
+  border-radius: 8px;
 `;
 
 const StyledInfo = styled.div`
   display: flex;
-  flex-direction: column;
   flex: 1;
+  flex-direction: column;
 `;
 
 const StyledName = styled.span`
@@ -289,26 +290,26 @@ const StyledElo = styled.span`
 `;
 
 const StyledClock = styled.div<{ $isActive?: boolean }>`
+  padding: 6px 12px;
   font-family: monospace;
   font-size: ${fontSizes.xlarge};
   font-weight: ${fontWeights.bold};
-  padding: 6px 12px;
-  border-radius: 6px;
   background-color: ${(props) =>
     props.$isActive ? colors.primary.darkest : colors.neutral.darkest};
   color: ${(props) =>
     props.$isActive ? colors.primary.light : colors.neutral.light};
   border: 1px solid
     ${(props) => (props.$isActive ? colors.primary.dark : "transparent")};
+  border-radius: 6px;
 `;
 
 const StyledChessboard = styled.div`
   display: grid;
   grid-template-columns: repeat(8, 64px);
   grid-template-rows: repeat(8, 64px);
+  overflow: hidden;
   border: 4px solid ${colors.neutral.dark};
   border-radius: 8px;
-  overflow: hidden;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
 
   @media (max-width: 600px) {
@@ -319,13 +320,13 @@ const StyledChessboard = styled.div`
 
 const StyledSquare = styled.div<{ $isLight: boolean }>`
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
   background-color: ${(props) =>
     props.$isLight ? colors.boardLight.base : colors.boardDark.base};
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
-  user-select: none;
   transition: background-color 0.15s ease;
 
   &:hover {
@@ -336,9 +337,9 @@ const StyledSquare = styled.div<{ $isLight: boolean }>`
 
 const StyledPiece = styled.span<{ $isBlack?: boolean }>`
   font-size: 42px;
+  line-height: 1;
   color: ${(props) => (props.$isBlack ? "#181a1b" : "#ffffff")};
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
-  line-height: 1;
 
   @media (max-width: 600px) {
     font-size: 26px;
@@ -357,8 +358,8 @@ const StyledRankCoord = styled.span<{ $isLight: boolean }>`
 
 const StyledFileCoord = styled.span<{ $isLight: boolean }>`
   position: absolute;
-  bottom: 2px;
   right: 4px;
+  bottom: 2px;
   font-size: 10px;
   font-weight: ${fontWeights.bold};
   color: ${(props) =>
@@ -366,22 +367,22 @@ const StyledFileCoord = styled.span<{ $isLight: boolean }>`
 `;
 
 const StyledControlSidebar = styled.aside`
-  width: 320px;
-  background-color: ${colors.neutral.dark};
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 320px;
+  padding: 24px;
+  background-color: ${colors.neutral.dark};
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 `;
 
 const StyledSidebarHeader = styled.h3`
-  font-size: ${fontSizes.large};
-  font-weight: ${fontWeights.bold};
   margin: 0;
   padding-bottom: 12px;
+  font-size: ${fontSizes.large};
+  font-weight: ${fontWeights.bold};
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 `;
 
@@ -399,13 +400,13 @@ const StyledMetaRow = styled.div`
 `;
 
 const StyledMoveHistory = styled.div`
-  flex: 1;
-  background-color: ${colors.neutral.darkest};
-  border-radius: 8px;
-  padding: 12px;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 8px;
+  padding: 12px;
+  background-color: ${colors.neutral.darkest};
+  border-radius: 8px;
 `;
 
 const StyledHistoryHeader = styled.span`
@@ -427,8 +428,8 @@ const StyledMoveRow = styled.div`
   color: ${colors.neutral.light};
 
   code {
-    color: ${colors.neutral.lightest};
     font-weight: ${fontWeights.semibold};
+    color: ${colors.neutral.lightest};
   }
 `;
 
@@ -440,16 +441,16 @@ const StyledActionButtons = styled.div`
 const StyledActionButton = styled.button<{ $variant: "draw" | "resign" }>`
   flex: 1;
   padding: 10px;
-  border-radius: 6px;
-  border: 1px solid
-    ${(props) =>
-      props.$variant === "draw" ? colors.warning.dark : colors.danger.dark};
+  font-size: ${fontSizes.small};
+  font-weight: ${fontWeights.semibold};
   background-color: ${(props) =>
     props.$variant === "draw" ? colors.warning.darkest : colors.danger.darkest};
   color: ${(props) =>
     props.$variant === "draw" ? colors.warning.light : colors.danger.light};
-  font-weight: ${fontWeights.semibold};
-  font-size: ${fontSizes.small};
+  border: 1px solid
+    ${(props) =>
+      props.$variant === "draw" ? colors.warning.dark : colors.danger.dark};
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
 

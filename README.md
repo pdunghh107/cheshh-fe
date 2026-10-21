@@ -9,19 +9,21 @@
 Dự án sử dụng trình quản lý gói **pnpm**:
 
 ### 🛠 Phát triển & Build
-| Lệnh | Mục đích |
-| :--- | :--- |
-| `pnpm dev` | Khởi động Local Development Server với Vite (HMR) |
-| `pnpm build` | Kiểm tra TypeScript (`tsc -b`) và đóng gói mã nguồn cho Production |
-| `pnpm preview` | Chạy thử bản build production trên môi trường local |
+
+| Lệnh           | Mục đích                                                           |
+| :------------- | :----------------------------------------------------------------- |
+| `pnpm dev`     | Khởi động Local Development Server với Vite (HMR)                  |
+| `pnpm build`   | Kiểm tra TypeScript (`tsc -b`) và đóng gói mã nguồn cho Production |
+| `pnpm preview` | Chạy thử bản build production trên môi trường local                |
 
 ### 🧹 Kiểm tra & Tự động Định dạng (Format & Linting)
-| Lệnh | Mục đích |
-| :--- | :--- |
-| `pnpm run format` | **Chạy tự động sort cả Import và CSS** trên toàn bộ dự án |
-| `pnpm run lint:fix` | **Tự động sắp xếp Import** theo nhóm chuẩn bằng ESLint |
+
+| Lệnh                | Mục đích                                                                  |
+| :------------------ | :------------------------------------------------------------------------ |
+| `pnpm run format`   | **Chạy tự động sort cả Import và CSS** trên toàn bộ dự án                 |
+| `pnpm run lint:fix` | **Tự động sắp xếp Import** theo nhóm chuẩn bằng ESLint                    |
 | `pnpm run lint:css` | **Tự động sắp xếp thuộc tính CSS** trong Styled Components bằng Stylelint |
-| `pnpm lint` | Kiểm tra toàn bộ lỗi cú pháp và code quality mà không sửa file |
+| `pnpm lint`         | Kiểm tra toàn bộ lỗi cú pháp và code quality mà không sửa file            |
 
 > **Mẹo:** VS Code đã được tích hợp sẵn qua file `.vscode/settings.json`. Mỗi khi bạn bấm **Save (`Ctrl + S`)**, Editor sẽ tự động sắp xếp Import và CSS chuẩn 100%.
 
@@ -44,6 +46,7 @@ pnpm add -D <tên_gói>
 ## 🛠 3. Các Thư Viện Đang Sử Dụng (Tech Stack)
 
 ### 3.1. Thư viện Chính (Dependencies)
+
 - **[React 19](https://react.dev/) + [React DOM 19](https://react.dev/)**: Thư viện nền tảng UI (hỗ trợ React Compiler).
 - **[React Router v8](https://reactrouter.com/)**: Định tuyến ứng dụng với Data Router API (`createBrowserRouter`, `RouterProvider`, `Navigate`, `Outlet`).
 - **[Styled Components v6](https://styled-components.com/)**: CSS-in-JS linh hoạt, quản lý theme, dynamic styling qua transient props (`$prop`).
@@ -53,6 +56,7 @@ pnpm add -D <tên_gói>
 - **[Lucide React](https://lucide.dev/)**: Bộ Icon SVG hiện đại, tối ưu dung lượng.
 
 ### 3.2. Công cụ Phát triển & Định dạng (DevDependencies)
+
 - **[Vite 8](https://vite.dev/)**: Build tool thế hệ mới siêu nhanh.
 - **[TypeScript 5.7](https://www.typescriptlang.org/)**: Đảm bảo an toàn kiểu dữ liệu tĩnh.
 - **[ESLint 10](https://eslint.org/)** + **[eslint-plugin-simple-import-sort](https://github.com/lydell/eslint-plugin-simple-import-sort)**: Tự động gom nhóm và sắp xếp thứ tự các câu lệnh `import`/`export`.

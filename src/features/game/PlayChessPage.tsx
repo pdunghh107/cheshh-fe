@@ -5,12 +5,15 @@ import styled from "styled-components";
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
 import { useAuth } from "@/features/auth/AuthContext";
+import { Board } from "@/features/game/components/board/Board";
+import { useChessGame } from "@/features/game/hooks/useChessGame";
 import { ROUTE_PATHS } from "@/routes/paths";
+
 
 /**
  * PlayChessPage Component
  *
- * @description Màn hình chơi cờ vua trực tuyến (Protected Route demo), hiển thị bàn cờ 64 ô, thông tin kỳ thủ và đồng hồ đếm ngược.
+ * @description Màn hình chơi cờ vua trực tuyến (Protected Route demo), hiển thị bàn cờ 64 ô qua Board Component, thông tin kỳ thủ và đồng hồ đếm ngược.
  *
  * @example
  * // Sử dụng trong ProtectedRoute:
@@ -25,14 +28,23 @@ export const PlayChessPage: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  // Sử dụng custom hook tự viết useChessGame để quản lý bàn cờ
+  const {
+    position,
+    turn,
+    selectedSquare,
+    validMoves,
+    lastMove,
+    history,
+    handleSquareClick,
+    resetGame,
+  } = useChessGame();
+
   const handleLogout = () => {
     logout();
     navigate(ROUTE_PATHS.LOGIN);
   };
 
-  // Tạo lưới 8x8 cho bàn cờ chuẩn
-  const rows = [8, 7, 6, 5, 4, 3, 2, 1];
-  const cols = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
   return (
     <StyledGameLayout>
@@ -65,47 +77,15 @@ export const PlayChessPage: React.FC = () => {
             <StyledClock>10:00</StyledClock>
           </StyledPlayerBar>
 
-          {/* 64 Squares Board */}
-          <StyledChessboard>
-            {rows.map((row, rIdx) =>
-              cols.map((col, cIdx) => {
-                const isLight = (rIdx + cIdx) % 2 === 0;
-                return (
-                  <StyledSquare
-                    key={`${col}${row}`}
-                    $isLight={isLight}
-                    title={`${col}${row}`}
-                  >
-                    {/* Render tọa độ viền góc bàn cờ */}
-                    {cIdx === 0 && (
-                      <StyledRankCoord $isLight={isLight}>
-                        {row}
-                      </StyledRankCoord>
-                    )}
-                    {rIdx === 7 && (
-                      <StyledFileCoord $isLight={isLight}>
-                        {col}
-                      </StyledFileCoord>
-                    )}
-
-                    {/* Vị trí mẫu vài quân cờ tượng trưng */}
-                    {row === 8 && (
-                      <StyledPiece $isBlack>
-                        {["♜", "♞", "♝", "♛", "♚", "♝", "♞", "♜"][cIdx]}
-                      </StyledPiece>
-                    )}
-                    {row === 7 && <StyledPiece $isBlack>♟</StyledPiece>}
-                    {row === 2 && <StyledPiece>♙</StyledPiece>}
-                    {row === 1 && (
-                      <StyledPiece>
-                        {["♖", "♘", "♗", "♕", "♔", "♗", "♘", "♖"][cIdx]}
-                      </StyledPiece>
-                    )}
-                  </StyledSquare>
-                );
-              }),
-            )}
-          </StyledChessboard>
+          {/* Reusable Chessboard Component */}
+          <Board
+            orientation="white"
+            position={position}
+            selectedSquare={selectedSquare}
+            validMoves={validMoves}
+            lastMove={lastMove}
+            onSquareClick={handleSquareClick}
+          />
 
           {/* Current Player Card */}
           <StyledPlayerBar>
@@ -114,7 +94,7 @@ export const PlayChessPage: React.FC = () => {
               <StyledName>{user?.username} (Bạn)</StyledName>
               <StyledElo>Elo {user?.rating}</StyledElo>
             </StyledInfo>
-            <StyledClock $isActive>09:45</StyledClock>
+            <StyledClock $isActive={turn === "white"}>09:45</StyledClock>
           </StyledPlayerBar>
         </StyledBoardWrapper>
 
@@ -127,32 +107,44 @@ export const PlayChessPage: React.FC = () => {
               <strong>10 phút (Rapid)</strong>
             </StyledMetaRow>
             <StyledMetaRow>
-              <span>Trạng thái:</span>
-              <strong style={{ color: colors.primary.light }}>
-                Đến lượt bạn đi
+              <span>Lượt đi:</span>
+              <strong style={{ color: turn === "white" ? colors.primary.light : colors.warning.light }}>
+                {turn === "white" ? "Quân Trắng (Bạn)" : "Quân Đen (Đối thủ)"}
               </strong>
             </StyledMetaRow>
           </StyledMatchMeta>
 
           <StyledMoveHistory>
             <StyledHistoryHeader>
-              Biên bản nước đi (Notation)
+              Biên bản nước đi ({history.length} nước)
             </StyledHistoryHeader>
             <StyledMovesList>
-              <StyledMoveRow>
-                <span>1.</span> <code>e4</code> <code>e5</code>
-              </StyledMoveRow>
-              <StyledMoveRow>
-                <span>2.</span> <code>Nf3</code> <code>Nc6</code>
-              </StyledMoveRow>
-              <StyledMoveRow>
-                <span>3.</span> <code>Bc4</code> <code>Bc5</code>
-              </StyledMoveRow>
+              {history.length === 0 ? (
+                <span style={{ color: colors.neutral.base, fontStyle: "italic" }}>
+                  Chưa có nước đi nào. Bấm vào quân cờ để bắt đầu!
+                </span>
+              ) : (
+                history.map((m, idx) => (
+                  <StyledMoveRow key={idx}>
+                    <span>{idx + 1}.</span>{" "}
+                    <code>
+                      {m.piece.type.toUpperCase()}: {m.from} → {m.to}
+                    </code>
+                    {m.captured && (
+                      <span style={{ color: colors.danger.light, fontSize: "11px" }}>
+                        (Ăn {m.captured.type.toUpperCase()})
+                      </span>
+                    )}
+                  </StyledMoveRow>
+                ))
+              )}
             </StyledMovesList>
           </StyledMoveHistory>
 
           <StyledActionButtons>
-            <StyledActionButton $variant="draw">Xin hòa cờ</StyledActionButton>
+            <StyledActionButton $variant="draw" onClick={resetGame}>
+              Ván mới
+            </StyledActionButton>
             <StyledActionButton $variant="resign">Đầu hàng</StyledActionButton>
           </StyledActionButtons>
         </StyledControlSidebar>
@@ -301,69 +293,6 @@ const StyledClock = styled.div<{ $isActive?: boolean }>`
   border: 1px solid
     ${(props) => (props.$isActive ? colors.primary.dark : "transparent")};
   border-radius: 6px;
-`;
-
-const StyledChessboard = styled.div`
-  display: grid;
-  grid-template-columns: repeat(8, 64px);
-  grid-template-rows: repeat(8, 64px);
-  overflow: hidden;
-  border: 4px solid ${colors.neutral.dark};
-  border-radius: 8px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
-
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(8, 40px);
-    grid-template-rows: repeat(8, 40px);
-  }
-`;
-
-const StyledSquare = styled.div<{ $isLight: boolean }>`
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  user-select: none;
-  background-color: ${(props) =>
-    props.$isLight ? colors.boardLight.base : colors.boardDark.base};
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: ${(props) =>
-      props.$isLight ? colors.boardLight.light : colors.boardDark.light};
-  }
-`;
-
-const StyledPiece = styled.span<{ $isBlack?: boolean }>`
-  font-size: 42px;
-  line-height: 1;
-  color: ${(props) => (props.$isBlack ? "#181a1b" : "#ffffff")};
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
-
-  @media (max-width: 600px) {
-    font-size: 26px;
-  }
-`;
-
-const StyledRankCoord = styled.span<{ $isLight: boolean }>`
-  position: absolute;
-  top: 2px;
-  left: 4px;
-  font-size: 10px;
-  font-weight: ${fontWeights.bold};
-  color: ${(props) =>
-    props.$isLight ? colors.boardDark.base : colors.boardLight.base};
-`;
-
-const StyledFileCoord = styled.span<{ $isLight: boolean }>`
-  position: absolute;
-  right: 4px;
-  bottom: 2px;
-  font-size: 10px;
-  font-weight: ${fontWeights.bold};
-  color: ${(props) =>
-    props.$isLight ? colors.boardDark.base : colors.boardLight.base};
 `;
 
 const StyledControlSidebar = styled.aside`

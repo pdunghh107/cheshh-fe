@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 
 import type { PieceColor, PieceType } from "../components/piece/Piece";
-import { isPawnPromote } from "../components/piece/utils/pawn/isPawnPromote";
-import { getPossibleMoves } from "../utils/chessRules";
+import { isPawnPromote } from "../components/piece/utils/pawn/pawn.constants";
+import { getLegalMoves } from "../utils/chessRules";
 
 import type { PendingPromotion } from "./useChessGame";
 
@@ -11,6 +11,7 @@ interface UseSquareClickParams {
   turn: PieceColor;
   selectedSquare: string | null;
   validMoves: string[];
+  lastMove?: [string, string] | null;
   setSelectedSquare: (square: string | null) => void;
   setValidMoves: (moves: string[]) => void;
   makeMove: (from: string, to: string, promotionPieceType?: PieceType) => void;
@@ -22,6 +23,7 @@ export const useSquareClick = ({
   turn,
   selectedSquare,
   validMoves,
+  lastMove,
   setSelectedSquare,
   setValidMoves,
   makeMove,
@@ -78,14 +80,14 @@ export const useSquareClick = ({
 
       if (clickedPiece && clickedPiece.color === turn) {
         setSelectedSquare(square);
-        const moves = getPossibleMoves(square, position);
+        const moves = getLegalMoves(square, position, lastMove);
         setValidMoves(moves);
         return true;
       }
 
       return false;
     },
-    [position, setSelectedSquare, setValidMoves, turn],
+    [position, setSelectedSquare, setValidMoves, turn, lastMove],
   );
 
   const handleCaseChooseInvalidSquare = useCallback(() => {
@@ -119,11 +121,11 @@ export const useSquareClick = ({
 
       if (clickedPiece && clickedPiece.color === turn) {
         setSelectedSquare(square);
-        const moves = getPossibleMoves(square, position);
+        const moves = getLegalMoves(square, position, lastMove);
         setValidMoves(moves);
       }
     },
-    [position, setSelectedSquare, setValidMoves, turn],
+    [position, setSelectedSquare, setValidMoves, turn, lastMove],
   );
 
   const handleSquareClick = useCallback(

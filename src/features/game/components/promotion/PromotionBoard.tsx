@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Piece, type PieceColor, type PieceType } from "../piece/Piece";
-import { PROMOTION_PIECE_TYPE } from "../piece/utils/pawn/isPawnPromote";
+import { PROMOTION_PIECE_TYPE } from "../piece/utils/pawn/pawn.constants";
 
 import {
   StyledPromotionContainer,

@@ -2,14 +2,14 @@ import { coordsToSquare } from "@/features/game/utils/translateDirection";
 
 import type { PieceMoveContext } from "../../piece.context";
 
+import { getPawnConfig } from "./pawn.constants";
+
 export const handlePawnEnPassant = (context: PieceMoveContext): string[] => {
   const { col, row, piece, position, lastMove } = context;
   const moves: string[] = [];
   if (!lastMove) return moves;
 
-  const isWhite = piece.color === "white";
-  const enPassantRow = isWhite ? 5 : 4;
-  const dir = isWhite ? 1 : -1;
+  const { dir, enPassantRow } = getPawnConfig(piece.color);
 
   if (row !== enPassantRow) return moves;
 

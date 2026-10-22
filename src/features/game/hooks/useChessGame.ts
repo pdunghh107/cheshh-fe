@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { DEFAULT_INITIAL_POSITION } from "../components/board/Board.constants";
 import type { PieceColor, PieceType } from "../components/piece/Piece";
+import {
+  getKingSquare,
+  hasAnyLegalMoves,
+  isKingInCheck,
+} from "../utils/chessRules";
 
 import { useMakeMove } from "./useMakeMove";
 import { useResetGame } from "./useResetGame";
@@ -90,6 +95,7 @@ export const useChessGame = () => {
     turn,
     selectedSquare,
     validMoves,
+    lastMove,
     setSelectedSquare,
     setValidMoves,
     makeMove,
@@ -105,12 +111,31 @@ export const useChessGame = () => {
     setHistory,
   });
 
+  // Kiểm tra trạng thái Chiếu (Check), Chiếu hết (Checkmate), Cờ bí (Stalemate)
+  const isCheck = useMemo(() => isKingInCheck(turn, position), [turn, position]);
+
+  const checkSquare = useMemo(() => {
+    return isCheck ? getKingSquare(turn, position) : null;
+  }, [isCheck, turn, position]);
+
+  const hasMoves = useMemo(
+    () => hasAnyLegalMoves(turn, position, lastMove),
+    [turn, position, lastMove],
+  );
+
+  const isCheckmate = isCheck && !hasMoves;
+  const isStalemate = !isCheck && !hasMoves;
+
   return {
     position,
     turn,
     selectedSquare,
     validMoves,
     lastMove,
+    checkSquare,
+    isCheck,
+    isCheckmate,
+    isStalemate,
     history,
     pendingPromotion,
     setPendingPromotion,

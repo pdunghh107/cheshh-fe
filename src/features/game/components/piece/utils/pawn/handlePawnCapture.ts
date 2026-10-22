@@ -2,10 +2,12 @@ import { coordsToSquare } from "@/features/game/utils/translateDirection";
 
 import type { PieceMoveContext } from "../../piece.context";
 
+import { getPawnConfig } from "./pawn.constants";
+
 export const handlePawnCapture = (context: PieceMoveContext): string[] => {
   const { col, row, piece, position } = context;
   const moves: string[] = [];
-  const dir = piece.color === "white" ? 1 : -1;
+  const { dir } = getPawnConfig(piece.color);
 
   for (const dCol of [-1, 1]) {
     const diagSq = coordsToSquare(col + dCol, row + dir);

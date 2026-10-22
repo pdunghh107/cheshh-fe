@@ -1,6 +1,8 @@
 import { coordsToSquare } from "../../../../utils/translateDirection";
 import type { PieceMoveContext } from "../../piece.context";
 
+import { getPawnConfig } from "./pawn.constants";
+
 const goOneStep = (
   col: number,
   row: number,
@@ -35,9 +37,7 @@ export const handlePawnMove = (context: PieceMoveContext): string[] => {
   const { col, row, piece, position } = context;
   const moves: string[] = [];
 
-  const isWhite = piece.color === "white";
-  const dir = isWhite ? 1 : -1;
-  const startRow = isWhite ? 2 : 7;
+  const { dir, startRow } = getPawnConfig(piece.color);
 
   const oneStep = goOneStep(col, row, dir, position);
   if (oneStep) moves.push(oneStep);

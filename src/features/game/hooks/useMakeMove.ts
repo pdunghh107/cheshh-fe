@@ -1,7 +1,7 @@
 import { type Dispatch, type SetStateAction, useCallback } from "react";
 
 import type { PieceColor, PieceType } from "../components/piece/Piece";
-import { isPawnPromote } from "../components/piece/utils/pawn/isPawnPromote";
+import { isPawnPromote } from "../components/piece/utils/pawn/pawn.constants";
 
 import type { MoveHistoryItem } from "./useChessGame";
 
@@ -34,8 +34,16 @@ export const useMakeMove = ({
       const piece = position[from];
       if (!piece) return;
 
-      const captured = position[to];
+      let captured = position[to];
       let finalPiece = piece;
+
+      // Xử lý ăn Tốt qua đường (En Passant): Tốt đi chéo nhưng ô đích trống
+      let enPassantCapturedSquare: string | null = null;
+      if (piece.type === "p" && !captured && from[0] !== to[0]) {
+        enPassantCapturedSquare = `${to[0]}${from[1]}`;
+        captured = position[enPassantCapturedSquare];
+      }
+
       if (piece.type === "p" && isPawnPromote(to, piece.color)) {
         finalPiece = { type: promotionPieceType, color: piece.color };
       }
@@ -44,6 +52,9 @@ export const useMakeMove = ({
       setPosition((prev) => {
         const next = { ...prev };
         delete next[from]; // Xóa quân ở ô cũ
+        if (enPassantCapturedSquare) {
+          delete next[enPassantCapturedSquare]; // Xóa quân Tốt bị ăn qua đường
+        }
         next[to] = finalPiece; // Đặt quân vào ô mới
         return next;
       });

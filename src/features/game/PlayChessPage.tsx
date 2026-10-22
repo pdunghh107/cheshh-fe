@@ -36,6 +36,7 @@ export const PlayChessPage: React.FC = () => {
     selectedSquare,
     validMoves,
     lastMove,
+    checkSquare,
     history,
     pendingPromotion,
     setPendingPromotion,
@@ -89,6 +90,7 @@ export const PlayChessPage: React.FC = () => {
               selectedSquare={selectedSquare}
               validMoves={validMoves}
               lastMove={lastMove}
+              checkSquare={checkSquare}
               onSquareClick={handleSquareClick}
             />
 

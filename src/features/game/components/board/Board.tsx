@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Piece } from "../Piece";
+import { Piece } from "../piece/Piece";
 
 import { isLightSquare } from "./utils/boardHelpers";
 import { DEFAULT_INITIAL_POSITION } from "./Board.constants";

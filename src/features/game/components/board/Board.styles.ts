@@ -1,4 +1,3 @@
-// src/components/main/Board/Board.styles.ts
 import styled from "styled-components";
 
 import { colors } from "@/commons/colors";

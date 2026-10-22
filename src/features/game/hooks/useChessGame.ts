@@ -1,8 +1,11 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { DEFAULT_INITIAL_POSITION } from "../components/board/Board.constants";
-import { type PieceColor, type PieceType } from "../components/Piece";
-import { getPossibleMoves } from "../utils/chessRules";
+import type { PieceColor, PieceType } from "../components/piece/Piece";
+
+import { useMakeMove } from "./useMakeMove";
+import { useResetGame } from "./useResetGame";
+import { useSquareClick } from "./useSquareClick";
 
 /**
  * MoveHistoryItem Interface
@@ -63,97 +66,34 @@ export const useChessGame = () => {
   // 6. Lịch sử các nước đi (để hiển thị Notation)
   const [history, setHistory] = useState<MoveHistoryItem[]>([]);
 
-  /**
-   * Hàm thực hiện nước đi (Make a move)
-   */
-  const makeMove = useCallback(
-    (from: string, to: string) => {
-      const piece = position[from];
-      if (!piece) return;
+  const { makeMove } = useMakeMove({
+    position,
+    setPosition,
+    setTurn,
+    setLastMove,
+    setHistory,
+    setSelectedSquare,
+    setValidMoves,
+  });
 
-      const captured = position[to];
+  const { handleSquareClick } = useSquareClick({
+    position,
+    turn,
+    selectedSquare,
+    validMoves,
+    setSelectedSquare,
+    setValidMoves,
+    makeMove,
+  });
 
-      // Cập nhật vị trí mới trên bàn cờ
-      setPosition((prev) => {
-        const next = { ...prev };
-        delete next[from]; // Xóa quân ở ô cũ
-        next[to] = piece; // Đặt quân vào ô mới
-        return next;
-      });
-
-      // Cập nhật highlight nước vừa đi
-      setLastMove([from, to]);
-
-      // Ghi lại lịch sử
-      setHistory((prev) => [...prev, { from, to, piece, captured }]);
-
-      // Đổi lượt sang đối phương
-      setTurn((prev) => (prev === "white" ? "black" : "white"));
-
-      // Reset vùng chọn
-      setSelectedSquare(null);
-      setValidMoves([]);
-    },
-    [position],
-  );
-
-  /**
-   * Xử lý sự kiện khi người chơi click vào một ô cờ
-   */
-  const handleSquareClick = useCallback(
-    (square: string) => {
-      const clickedPiece = position[square];
-
-      // KỊCH BẢN 1: Nếu người chơi đang ĐÃ CHỌN 1 ô cờ trước đó
-      if (selectedSquare) {
-        // A. Click lại đúng ô đó -> Bỏ chọn
-        if (selectedSquare === square) {
-          setSelectedSquare(null);
-          setValidMoves([]);
-          return;
-        }
-
-        // B. Click vào 1 ô nằm trong danh sách nước đi hợp lệ -> DI CHUYỂN QUÂN
-        if (validMoves.includes(square)) {
-          makeMove(selectedSquare, square);
-          return;
-        }
-
-        // C. Click vào 1 quân khác của chính mình -> Đổi lựa chọn sang quân này
-        if (clickedPiece && clickedPiece.color === turn) {
-          setSelectedSquare(square);
-          const moves = getPossibleMoves(square, position);
-          setValidMoves(moves);
-          return;
-        }
-
-        // D. Click vào ô không hợp lệ khác -> Hủy chọn
-        setSelectedSquare(null);
-        setValidMoves([]);
-        return;
-      }
-
-      // KỊCH BẢN 2: Chưa chọn ô nào -> Chỉ cho phép chọn nếu là quân cờ của phe ĐẾN LƯỢT ĐI
-      if (clickedPiece && clickedPiece.color === turn) {
-        setSelectedSquare(square);
-        const moves = getPossibleMoves(square, position);
-        setValidMoves(moves);
-      }
-    },
-    [selectedSquare, validMoves, position, turn, makeMove],
-  );
-
-  /**
-   * Khởi động lại ván cờ mới
-   */
-  const resetGame = useCallback(() => {
-    setPosition(DEFAULT_INITIAL_POSITION);
-    setTurn("white");
-    setSelectedSquare(null);
-    setValidMoves([]);
-    setLastMove(null);
-    setHistory([]);
-  }, []);
+  const { resetGame } = useResetGame({
+    setPosition,
+    setTurn,
+    setSelectedSquare,
+    setValidMoves,
+    setLastMove,
+    setHistory,
+  });
 
   return {
     position,

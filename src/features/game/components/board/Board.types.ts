@@ -1,4 +1,4 @@
-import { type PieceColor, type PieceType } from "../Piece";
+import { type PieceColor, type PieceType } from "../piece/Piece";
 
 export interface BoardProps {
   orientation?: "white" | "black";

@@ -1,7 +1,10 @@
 import { useCallback } from "react";
 
 import type { PieceColor, PieceType } from "../components/piece/Piece";
+import { isPawnPromote } from "../components/piece/utils/pawn/isPawnPromote";
 import { getPossibleMoves } from "../utils/chessRules";
+
+import type { PendingPromotion } from "./useChessGame";
 
 interface UseSquareClickParams {
   position: Record<string, { type: PieceType; color: PieceColor } | undefined>;
@@ -10,7 +13,8 @@ interface UseSquareClickParams {
   validMoves: string[];
   setSelectedSquare: (square: string | null) => void;
   setValidMoves: (moves: string[]) => void;
-  makeMove: (from: string, to: string) => void;
+  makeMove: (from: string, to: string, promotionPieceType?: PieceType) => void;
+  setPendingPromotion?: (pending: PendingPromotion | null) => void;
 }
 
 export const useSquareClick = ({
@@ -21,6 +25,7 @@ export const useSquareClick = ({
   setSelectedSquare,
   setValidMoves,
   makeMove,
+  setPendingPromotion,
 }: UseSquareClickParams) => {
   const handleCaseClickSameSquare = useCallback(
     (square: string) => {
@@ -36,13 +41,35 @@ export const useSquareClick = ({
 
   const handleCaseChooseValidMove = useCallback(
     (square: string) => {
-      if (validMoves.includes(square)) {
-        makeMove(selectedSquare!, square);
+      if (validMoves.includes(square) && selectedSquare) {
+        const piece = position[selectedSquare];
+
+        // Nếu là quân Tốt đi tới hàng cuối cùng -> Kích hoạt chọn phong cấp (Promotion)
+        if (piece?.type === "p" && isPawnPromote(square, piece.color)) {
+          setPendingPromotion?.({
+            from: selectedSquare,
+            to: square,
+            color: piece.color,
+          });
+          setSelectedSquare(null);
+          setValidMoves([]);
+          return true;
+        }
+
+        makeMove(selectedSquare, square);
         return true;
       }
       return false;
     },
-    [validMoves, makeMove, selectedSquare],
+    [
+      validMoves,
+      selectedSquare,
+      position,
+      setPendingPromotion,
+      setSelectedSquare,
+      setValidMoves,
+      makeMove,
+    ],
   );
 
   const handleCaseChooseAnotherPiece = useCallback(

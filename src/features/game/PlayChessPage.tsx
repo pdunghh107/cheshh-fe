@@ -6,6 +6,7 @@ import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
 import { useAuth } from "@/features/auth/AuthContext";
 import { Board } from "@/features/game/components/board/Board";
+import { PromotionBoard } from "@/features/game/components/promotion/PromotionBoard";
 import { useChessGame } from "@/features/game/hooks/useChessGame";
 import { ROUTE_PATHS } from "@/routes/paths";
 
@@ -36,7 +37,10 @@ export const PlayChessPage: React.FC = () => {
     validMoves,
     lastMove,
     history,
+    pendingPromotion,
+    setPendingPromotion,
     handleSquareClick,
+    makeMove,
     resetGame,
   } = useChessGame();
 
@@ -77,15 +81,30 @@ export const PlayChessPage: React.FC = () => {
             <StyledClock>10:00</StyledClock>
           </StyledPlayerBar>
 
-          {/* Reusable Chessboard Component */}
-          <Board
-            orientation="white"
-            position={position}
-            selectedSquare={selectedSquare}
-            validMoves={validMoves}
-            lastMove={lastMove}
-            onSquareClick={handleSquareClick}
-          />
+          {/* Reusable Chessboard Component with Promotion Overlay */}
+          <div style={{ position: "relative", width: "fit-content" }}>
+            <Board
+              orientation="white"
+              position={position}
+              selectedSquare={selectedSquare}
+              validMoves={validMoves}
+              lastMove={lastMove}
+              onSquareClick={handleSquareClick}
+            />
+
+            {pendingPromotion && (
+              <PromotionBoard
+                targetSquare={pendingPromotion.to}
+                color={pendingPromotion.color}
+                orientation="white"
+                onSelect={(pieceType) => {
+                  makeMove(pendingPromotion.from, pendingPromotion.to, pieceType);
+                  setPendingPromotion(null);
+                }}
+                onCancel={() => setPendingPromotion(null)}
+              />
+            )}
+          </div>
 
           {/* Current Player Card */}
           <StyledPlayerBar>

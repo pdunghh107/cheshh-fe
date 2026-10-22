@@ -18,6 +18,12 @@ export interface MoveHistoryItem {
   captured?: { type: PieceType; color: PieceColor };
 }
 
+export interface PendingPromotion {
+  from: string;
+  to: string;
+  color: PieceColor;
+}
+
 /**
  * useChessGame Custom Hook
  *
@@ -66,6 +72,9 @@ export const useChessGame = () => {
   // 6. Lịch sử các nước đi (để hiển thị Notation)
   const [history, setHistory] = useState<MoveHistoryItem[]>([]);
 
+  // 7. Trạng thái phong cấp đang chờ người chơi chọn quân
+  const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
+
   const { makeMove } = useMakeMove({
     position,
     setPosition,
@@ -84,6 +93,7 @@ export const useChessGame = () => {
     setSelectedSquare,
     setValidMoves,
     makeMove,
+    setPendingPromotion,
   });
 
   const { resetGame } = useResetGame({
@@ -102,6 +112,8 @@ export const useChessGame = () => {
     validMoves,
     lastMove,
     history,
+    pendingPromotion,
+    setPendingPromotion,
     handleSquareClick,
     makeMove,
     resetGame,

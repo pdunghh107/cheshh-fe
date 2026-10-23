@@ -11,8 +11,9 @@ import {
   registerSchema,
 } from "@/features/auth/auth.schema";
 import { registerApi } from "@/features/auth/authApi";
-import { useAuth } from "@/features/auth/AuthContext";
+import { useAuth } from "@/features/auth/useAuth";
 import { ROUTE_PATHS } from "@/routes/paths";
+import { handleApiError, handleApiSuccess } from "@/utils/toast";
 
 import {
   StyledApiErrorAlert,
@@ -63,22 +64,31 @@ export const RegisterPage: React.FC = () => {
 
       const token = response.accessToken || response.token;
       const user = response.user || {
-        id: "u_" + Date.now(),
+        id: response.userId || "u_" + values.username,
         username: response.username || values.username,
-        email: values.email,
-        rating: 1200,
+        email: response.email || values.email,
+        rating: response.rating || 1200,
       };
 
+      handleApiSuccess(response.message || "Đăng ký tài khoản thành công!");
       login(user, token);
-      navigate(ROUTE_PATHS.PLAY);
+      navigate(ROUTE_PATHS.HOME, { replace: true });
     } catch (err: unknown) {
+      handleApiError(err, "Đăng ký thất bại. Vui lòng thử lại!");
       let message =
-        "Đăng ký thất bại. Tên người dùng hoặc email có thể đã được sử dụng!";
-      if (err && typeof err === "object" && "response" in err) {
-        const res = (err as { response?: { data?: { message?: string } } })
-          .response;
-        if (res?.data?.message) {
-          message = res.data.message;
+        "Không thể kết nối đến máy chủ Backend (http://localhost:8081). Vui lòng kiểm tra lại dịch vụ!";
+      if (err && typeof err === "object") {
+        if ("response" in err) {
+          const res = (err as { response?: { data?: { message?: string } } })
+            .response;
+          if (res?.data?.message) {
+            message = res.data.message;
+          }
+        } else if (
+          "message" in err &&
+          typeof (err as { message: unknown }).message === "string"
+        ) {
+          message = (err as { message: string }).message;
         }
       }
       setApiError(message);

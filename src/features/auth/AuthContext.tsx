@@ -1,43 +1,25 @@
-import React, {
-  createContext,
-  type ReactNode,
-  useContext,
-  useState,
-} from "react";
+import React, { type ReactNode, useState } from "react";
 
-/**
- * Auth Context & Mock Provider
- *
- * @description Quản lý trạng thái đăng nhập cho toàn bộ ứng dụng (giả lập Redux / Session token).
- *
- * @example
- * // Usage trong component con:
- * import { useAuth } from '@/features/auth/AuthContext';
- *
- * const { isAuthenticated, login, logout, user } = useAuth();
- * <button onClick={login}>Đăng nhập</button>
- */
 import { setAccessToken } from "@/services/api";
 
-export interface User {
-  id: string;
-  username: string;
-  email?: string;
-  rating: number;
-}
+import { logoutApi } from "./authApi";
+import {
+  AUTH_STORAGE_KEY,
+  AuthContext,
+  type User,
+  USER_STORAGE_KEY,
+} from "./useAuth";
 
-interface AuthContextType {
-  isAuthenticated: boolean;
-  user: User | null;
-  login: (userData?: Partial<User> | string, token?: string) => void;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const AUTH_STORAGE_KEY = "chesshh_auth_state";
-const USER_STORAGE_KEY = "chesshh_user_data";
-
+/**
+ * AuthProvider Component
+ *
+ * @description Quản lý trạng thái xác thực và lưu trữ phiên đăng nhập người dùng.
+ *
+ * @example
+ * <AuthProvider>
+ *   <App />
+ * </AuthProvider>
+ */
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -84,12 +66,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    localStorage.removeItem(USER_STORAGE_KEY);
-    setAccessToken(null);
+  const logout = async () => {
+    try {
+      await logoutApi();
+    } catch (error) {
+      // Dù API logout có lỗi mạng hay token hết hạn thì vẫn clear client auth state
+      console.error("Lỗi khi gọi API logout:", error);
+    } finally {
+      setIsAuthenticated(false);
+      setUser(null);
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem(USER_STORAGE_KEY);
+      setAccessToken(null);
+    }
   };
 
   return (
@@ -97,12 +86,4 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

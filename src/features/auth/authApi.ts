@@ -10,8 +10,12 @@ export interface UserDto {
 export interface AuthResponse {
   accessToken?: string;
   token?: string;
+  tokenType?: string;
   user?: UserDto;
+  userId?: string;
   username?: string;
+  email?: string;
+  rating?: number;
   message?: string;
 }
 
@@ -54,4 +58,12 @@ export const registerApi = async (
     password: payload.password,
   });
   return response.data;
+};
+
+/**
+ * Gọi API Đăng xuất
+ * POST /api/v1/auth/logout
+ */
+export const logoutApi = async (): Promise<void> => {
+  await apiClient.post("/auth/logout");
 };

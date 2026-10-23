@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
-import { useAuth } from "@/features/auth/AuthContext";
+import { useAuth } from "@/features/auth/useAuth";
 import { Board } from "@/features/game/components/board/Board";
 import { PromotionBoard } from "@/features/game/components/promotion/PromotionBoard";
 import { useChessGame } from "@/features/game/hooks/useChessGame";

@@ -1,9 +1,5 @@
 import React, { useImperativeHandle } from "react";
-import {
-  type FieldValues,
-  FormProvider,
-  type Path,
-} from "react-hook-form";
+import { type FieldValues, FormProvider, type Path } from "react-hook-form";
 
 import { StyledForm } from "./Form.styles";
 import type { FormProps, FormRef } from "./Form.types";
@@ -37,14 +33,7 @@ const FormInner = <TFormValues extends FieldValues = FieldValues>(
   { form, onSubmit, children, className, ...restProps }: FormProps<TFormValues>,
   ref: React.ForwardedRef<FormRef<TFormValues>>,
 ) => {
-  const {
-    handleSubmit,
-    formState,
-    reset,
-    getValues,
-    setValue,
-    trigger,
-  } = form;
+  const { handleSubmit, formState, reset, getValues, setValue, trigger } = form;
 
   // Expose các methods và dirty checkers ra ngoài qua ref
   useImperativeHandle(
@@ -52,7 +41,10 @@ const FormInner = <TFormValues extends FieldValues = FieldValues>(
     (): FormRef<TFormValues> => ({
       isDirty: formState.isDirty,
       isFieldDirty: (name: Path<TFormValues>) => {
-        const dirtyFields = formState.dirtyFields as Record<string, boolean | undefined>;
+        const dirtyFields = formState.dirtyFields as Record<
+          string,
+          boolean | undefined
+        >;
         return Boolean(dirtyFields[name]);
       },
       dirtyFields: formState.dirtyFields,
@@ -73,7 +65,11 @@ const FormInner = <TFormValues extends FieldValues = FieldValues>(
     <FormProvider {...form}>
       <StyledForm
         className={className}
-        onSubmit={handleSubmit(onSubmit)}
+        method="POST"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit(onSubmit)(e);
+        }}
         {...restProps}
       >
         {children}
@@ -83,7 +79,7 @@ const FormInner = <TFormValues extends FieldValues = FieldValues>(
 };
 
 export const Form = React.forwardRef(FormInner) as <
-  TFormValues extends FieldValues = FieldValues
+  TFormValues extends FieldValues = FieldValues,
 >(
   props: FormProps<TFormValues> & {
     ref?: React.ForwardedRef<FormRef<TFormValues>>;

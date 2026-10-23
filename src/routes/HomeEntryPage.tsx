@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useAuth } from "@/features/auth/AuthContext";
+import { useAuth } from "@/features/auth/useAuth";
 import { MainPage } from "@/features/dashboard";
 import { OnboardingPage } from "@/features/onboarding";
 

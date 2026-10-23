@@ -8,8 +8,9 @@ import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
 import { type LoginFormValues, loginSchema } from "@/features/auth/auth.schema";
 import { loginApi } from "@/features/auth/authApi";
-import { useAuth } from "@/features/auth/AuthContext";
+import { useAuth } from "@/features/auth/useAuth";
 import { ROUTE_PATHS } from "@/routes/paths";
+import { handleApiError, handleApiSuccess } from "@/utils/toast";
 
 import {
   StyledApiErrorAlert,
@@ -53,21 +54,31 @@ export const InitialLoginView: React.FC = () => {
       const response = await loginApi(values);
       const token = response.accessToken || response.token;
       const user = response.user || {
-        id: "u_" + Date.now(),
+        id: response.userId || "u_" + values.usernameOrEmail,
         username: response.username || values.usernameOrEmail,
-        rating: 1800,
+        email: response.email,
+        rating: response.rating || 1800,
       };
 
+      handleApiSuccess(response.message || "Đăng nhập thành công!");
       login(user, token);
-      navigate(ROUTE_PATHS.PLAY);
+      navigate(ROUTE_PATHS.HOME, { replace: true });
     } catch (err: unknown) {
+      handleApiError(err, "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản!");
       let message =
-        "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin tài khoản!";
-      if (err && typeof err === "object" && "response" in err) {
-        const res = (err as { response?: { data?: { message?: string } } })
-          .response;
-        if (res?.data?.message) {
-          message = res.data.message;
+        "Không thể kết nối đến máy chủ Backend (http://localhost:8081). Vui lòng kiểm tra lại dịch vụ!";
+      if (err && typeof err === "object") {
+        if ("response" in err) {
+          const res = (err as { response?: { data?: { message?: string } } })
+            .response;
+          if (res?.data?.message) {
+            message = res.data.message;
+          }
+        } else if (
+          "message" in err &&
+          typeof (err as { message: unknown }).message === "string"
+        ) {
+          message = (err as { message: string }).message;
         }
       }
       setApiError(message);

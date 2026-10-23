@@ -1,10 +1,12 @@
 import { createBrowserRouter, Navigate } from "react-router";
 
 import { LoginPage } from "@/features/auth/LoginPage";
+import { MainPage } from "@/features/dashboard";
 import { PlayChessPage } from "@/features/game/PlayChessPage";
+import { MainLayout } from "@/layouts";
+import { HomeEntryPage } from "@/routes/HomeEntryPage";
 import { ROUTE_PATHS } from "@/routes/paths";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
-
 
 /**
  * App Router Configuration
@@ -17,27 +19,42 @@ import { ProtectedRoute } from "@/routes/ProtectedRoute";
  */
 
 export const router = createBrowserRouter([
-  // Public Route: Đăng nhập (hỗ trợ cả Initial View và Redirected View khi có query ?redirect=true)
+  // Public Route: Đăng nhập
   {
     path: ROUTE_PATHS.LOGIN,
     element: <LoginPage />,
   },
 
-  // Protected Routes: Bắt buộc đăng nhập
+  // Layout bao bọc ứng dụng (Sidebar + Header + Container)
   {
-    element: <ProtectedRoute />,
+    element: <MainLayout />,
     children: [
+      // Route gốc `/`: Onboarding khi chưa login, MainPage khi đã login
       {
         path: ROUTE_PATHS.HOME,
-        element: <Navigate to={ROUTE_PATHS.PLAY} replace />,
+        element: <HomeEntryPage />,
       },
+      // Protected Routes: Bắt buộc đăng nhập
       {
-        path: ROUTE_PATHS.PLAY,
-        element: <PlayChessPage />,
-      },
-      {
-        path: ROUTE_PATHS.GAME(":gameId"),
-        element: <PlayChessPage />,
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: ROUTE_PATHS.PLAY,
+            element: <PlayChessPage />,
+          },
+          {
+            path: ROUTE_PATHS.GAME(":gameId"),
+            element: <PlayChessPage />,
+          },
+          {
+            path: ROUTE_PATHS.LEADERBOARD,
+            element: <MainPage />,
+          },
+          {
+            path: ROUTE_PATHS.PROFILE,
+            element: <MainPage />,
+          },
+        ],
       },
     ],
   },
@@ -45,6 +62,6 @@ export const router = createBrowserRouter([
   // Fallback Route: 404
   {
     path: ROUTE_PATHS.NOT_FOUND,
-    element: <Navigate to={ROUTE_PATHS.PLAY} replace />,
+    element: <Navigate to={ROUTE_PATHS.HOME} replace />,
   },
 ]);

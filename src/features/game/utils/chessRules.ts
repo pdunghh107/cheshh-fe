@@ -12,7 +12,7 @@ export type BoardPosition = Record<
 /**
  * Tính toán các ô đi hợp lệ cơ bản cho từng loại quân cờ
  */
-export const getPossibleMoves = (
+const getPossibleMoves = (
   square: string,
   position: BoardPosition,
   lastMove?: [string, string] | null,

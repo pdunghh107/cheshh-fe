@@ -1,10 +1,7 @@
-import {
-  createAsyncThunk,
-  createSlice,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import { apiClient, setAccessToken } from "@/services/api";
+import { setAccessToken } from "@/services/api";
+import { createApiThunk } from "@/store/createApiThunk";
 
 /**
  * User Interface
@@ -33,44 +30,49 @@ const initialState: AuthState = {
   error: null,
 };
 
+export interface LoginCredentials {
+  username: string;
+  password?: string;
+}
+
+export interface LoginResponse {
+  user: User;
+  accessToken: string;
+}
+
 /**
  * Async Thunk: Đăng nhập
+ * Tự động hóa: POST /auth/login, bắt lỗi rejectWithValue, và lưu access token qua onSuccess
  */
-export const loginUser = createAsyncThunk(
+export const loginUser = createApiThunk<LoginResponse, LoginCredentials>(
   "auth/loginUser",
-  async (
-    credentials: { username: string; password?: string },
-    { rejectWithValue },
-  ) => {
-    try {
-      const response = await apiClient.post<{
-        user: User;
-        accessToken: string;
-      }>("/auth/login", credentials);
-      // Lưu access token vào storage
-      setAccessToken(response.data.accessToken);
-      return response.data;
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Đăng nhập thất bại. Vui lòng kiểm tra lại!",
-      );
-    }
+  {
+    method: "post",
+    url: "/auth/login",
+    defaultErrorMessage: "Đăng nhập thất bại. Vui lòng kiểm tra lại!",
+    onSuccess: (data) => {
+      // Custom handler: tự động lưu access token vào storage
+      if (data.accessToken) {
+        setAccessToken(data.accessToken);
+      }
+    },
   },
 );
 
 /**
- * Async Thunk: Đăng xuất (xóa token ở client và báo backend xóa cookie)
+ * Async Thunk: Đăng xuất
+ * Tự động hóa: POST /auth/logout và dọn dẹp access token
  */
-export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
-  try {
-    await apiClient.post("/auth/logout");
-  } catch {
-    // Kể cả backend lỗi vẫn dọn sạch state phía client
-  } finally {
+export const logoutUser = createApiThunk<void, void>("auth/logoutUser", {
+  method: "post",
+  url: "/auth/logout",
+  onSuccess: () => {
     setAccessToken(null);
-  }
+  },
+  onError: () => {
+    // Dù backend lỗi vẫn xóa token ở client
+    setAccessToken(null);
+  },
 });
 
 export const authSlice = createSlice({

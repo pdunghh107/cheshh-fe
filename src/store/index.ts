@@ -29,3 +29,5 @@ export type AppDispatch = typeof store.dispatch;
 // Custom hooks có sẵn kiểu dữ liệu (Type-safe hooks)
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+export * from "./createApiThunk";

@@ -1,6 +1,8 @@
 import toast from "react-hot-toast";
+import axios from "axios";
 
 import { colors } from "@/commons/colors";
+import { SYSTEM_MESSAGES } from "@/commons/messages";
 import type { ApiError, ApiResponse } from "@/types/api";
 
 /**
@@ -53,7 +55,7 @@ export const showErrorToast = (message: string) => {
  */
 export const handleApiSuccess = <T>(
   response?: ApiResponse<T> | string,
-  fallbackMessage = "Thao tác thành công!",
+  fallbackMessage: string = SYSTEM_MESSAGES.OPERATION_SUCCESS,
 ) => {
   if (typeof response === "string") {
     showSuccessToast(response || fallbackMessage);
@@ -69,29 +71,19 @@ export const handleApiSuccess = <T>(
  */
 export const handleApiError = (
   error: unknown,
-  fallbackMessage = "Đã có lỗi xảy ra. Vui lòng thử lại sau!",
+  fallbackMessage: string = SYSTEM_MESSAGES.OPERATION_FAILED,
 ) => {
   let message = fallbackMessage;
 
-  if (error && typeof error === "object") {
-    // 1. Kiểm tra nếu là AxiosError chứa response.data kiểu ApiError
-    if ("response" in error) {
-      const resData = (error as { response?: { data?: ApiError } }).response
-        ?.data;
-      if (resData?.message) {
-        message = resData.message;
-      }
+  if (axios.isAxiosError<ApiError>(error)) {
+    message = error.response?.data?.message || error.message || fallbackMessage;
 
-      // TODO: Có nên xử lý hiển thị toast cho từng detail lỗi trong resData.errors (ApiErrorDetail[]) không?
-      // Hiện tại giữ thông báo tổng quát ở cấp độ resData.message để tránh spam giao diện người dùng.
-      // Nếu sau này muốn hiển thị cụ thể cho từng field (ví dụ: errors.map(e => e.message)),
-      // có thể cân nhắc tích hợp vào error state của react-hook-form (setError) hoặc hiển thị toast phụ tại đây.
-    } else if (
-      "message" in error &&
-      typeof (error as { message: unknown }).message === "string"
-    ) {
-      message = (error as { message: string }).message;
-    }
+    // TODO: Có nên xử lý hiển thị toast cho từng detail lỗi trong error.response?.data?.errors (ApiErrorDetail[]) không?
+    // Hiện tại giữ thông báo tổng quát ở cấp độ message để tránh spam giao diện người dùng.
+    // Nếu sau này muốn hiển thị cụ thể cho từng field (ví dụ: errors.map(e => e.message)),
+    // có thể cân nhắc tích hợp vào error state của react-hook-form (setError) hoặc hiển thị toast phụ tại đây.
+  } else if (error instanceof Error) {
+    message = error.message;
   }
 
   showErrorToast(message);

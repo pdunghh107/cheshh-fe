@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
+import { AUTH_MESSAGES } from "@/commons/messages";
 import { setAccessToken } from "@/services/api";
 import { createApiThunk } from "@/store/createApiThunk";
 
@@ -49,7 +50,7 @@ export const loginUser = createApiThunk<LoginResponse, LoginCredentials>(
   {
     method: "post",
     url: "/auth/login",
-    defaultErrorMessage: "Đăng nhập thất bại. Vui lòng kiểm tra lại!",
+    defaultErrorMessage: AUTH_MESSAGES.LOGIN_FAILED,
     onSuccess: (data) => {
       // Custom handler: tự động lưu access token vào storage
       if (data.accessToken) {

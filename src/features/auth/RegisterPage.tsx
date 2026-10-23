@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Crown, UserPlus } from "lucide-react";
 
+import { AUTH_MESSAGES, SYSTEM_MESSAGES } from "@/commons/messages";
 import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
 import {
@@ -70,13 +71,12 @@ export const RegisterPage: React.FC = () => {
         rating: response.rating || 1200,
       };
 
-      handleApiSuccess(response.message || "Đăng ký tài khoản thành công!");
+      handleApiSuccess(response.message || AUTH_MESSAGES.REGISTER_SUCCESS);
       login(user, token);
       navigate(ROUTE_PATHS.HOME, { replace: true });
     } catch (err: unknown) {
-      handleApiError(err, "Đăng ký thất bại. Vui lòng thử lại!");
-      let message =
-        "Không thể kết nối đến máy chủ Backend (http://localhost:8081). Vui lòng kiểm tra lại dịch vụ!";
+      handleApiError(err, AUTH_MESSAGES.REGISTER_FAILED);
+      let message: string = SYSTEM_MESSAGES.SERVER_CONNECTION_ERROR;
       if (err && typeof err === "object") {
         if ("response" in err) {
           const res = (err as { response?: { data?: { message?: string } } })

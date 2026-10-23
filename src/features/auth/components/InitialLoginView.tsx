@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, LogIn, Swords } from "lucide-react";
 
+import { AUTH_MESSAGES, SYSTEM_MESSAGES } from "@/commons/messages";
 import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
 import { type LoginFormValues, loginSchema } from "@/features/auth/auth.schema";
@@ -23,14 +24,6 @@ import {
   StyledLogoBadge,
 } from "./AuthStyles";
 
-/**
- * InitialLoginView Component
- *
- * @description Màn hình đăng nhập tiêu chuẩn (Theme Trắng & Xanh lá, icon Lucide React) gọi API POST /auth/login.
- *
- * @example
- * <InitialLoginView />
- */
 export const InitialLoginView: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -60,13 +53,12 @@ export const InitialLoginView: React.FC = () => {
         rating: response.rating || 1800,
       };
 
-      handleApiSuccess(response.message || "Đăng nhập thành công!");
+      handleApiSuccess(response.message || AUTH_MESSAGES.LOGIN_SUCCESS);
       login(user, token);
       navigate(ROUTE_PATHS.HOME, { replace: true });
     } catch (err: unknown) {
-      handleApiError(err, "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản!");
-      let message =
-        "Không thể kết nối đến máy chủ Backend (http://localhost:8081). Vui lòng kiểm tra lại dịch vụ!";
+      handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
+      let message: string = SYSTEM_MESSAGES.SERVER_CONNECTION_ERROR;
       if (err && typeof err === "object") {
         if ("response" in err) {
           const res = (err as { response?: { data?: { message?: string } } })

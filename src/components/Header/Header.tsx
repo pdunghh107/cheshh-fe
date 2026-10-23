@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { LogIn, LogOut, Trophy, User as UserIcon } from "lucide-react";
 
+import { AUTH_MESSAGES } from "@/commons/messages";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/features/auth/useAuth";
 import { ROUTE_PATHS } from "@/routes/paths";
@@ -51,10 +52,10 @@ export const Header: React.FC<HeaderProps> = ({
     try {
       setIsLoggingOut(true);
       await logout();
-      handleApiSuccess("Đăng xuất thành công!");
+      handleApiSuccess(AUTH_MESSAGES.LOGOUT_SUCCESS);
       navigate(ROUTE_PATHS.HOME);
     } catch (error) {
-      handleApiError(error, "Đăng xuất thất bại!");
+      handleApiError(error, AUTH_MESSAGES.LOGOUT_FAILED);
       console.error("Lỗi khi đăng xuất:", error);
     } finally {
       setIsLoggingOut(false);

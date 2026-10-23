@@ -7,6 +7,7 @@ import styled from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
+import { AUTH_MESSAGES, SYSTEM_MESSAGES } from "@/commons/messages";
 import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
 import { type LoginFormValues, loginSchema } from "@/features/auth/auth.schema";
@@ -104,7 +105,7 @@ export const RedirectedLoginView: React.FC = () => {
       const response = await loginApi(values);
       const token = response.accessToken || response.token;
       if (!response.user && !response.username) {
-        throw new Error("Dữ liệu phản hồi từ máy chủ không hợp lệ");
+        throw new Error(SYSTEM_MESSAGES.UNKNOWN_ERROR);
       }
 
       const user = response.user || {
@@ -113,12 +114,12 @@ export const RedirectedLoginView: React.FC = () => {
         rating: 1800,
       };
 
-      handleApiSuccess(response.message || "Đăng nhập thành công!");
+      handleApiSuccess(response.message || AUTH_MESSAGES.LOGIN_SUCCESS);
       login(user, token);
       navigate(targetPath, { replace: true });
     } catch (err: unknown) {
-      handleApiError(err, "Đăng nhập thất bại. Vui lòng thử lại!");
-      let message = "Không thể kết nối đến máy chủ Backend (http://localhost:8081). Vui lòng kiểm tra lại dịch vụ!";
+      handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
+      let message: string = SYSTEM_MESSAGES.SERVER_CONNECTION_ERROR;
       if (err && typeof err === "object") {
         if ("response" in err) {
           const res = (err as { response?: { data?: { message?: string } } }).response;

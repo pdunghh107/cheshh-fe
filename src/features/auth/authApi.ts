@@ -30,10 +30,6 @@ export interface RegisterPayload {
   password: string;
 }
 
-/**
- * Gọi API Đăng nhập
- * POST /api/v1/auth/login
- */
 export const loginApi = async (
   payload: LoginPayload,
 ): Promise<AuthResponse> => {

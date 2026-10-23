@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router";
 
 import { LoginPage } from "@/features/auth/LoginPage";
+import { RegisterPage } from "@/features/auth/RegisterPage";
 import { MainPage } from "@/features/dashboard";
 import { PlayChessPage } from "@/features/game/PlayChessPage";
 import { MainLayout } from "@/layouts";
@@ -23,6 +24,11 @@ export const router = createBrowserRouter([
   {
     path: ROUTE_PATHS.LOGIN,
     element: <LoginPage />,
+  },
+  // Public Route: Đăng ký
+  {
+    path: ROUTE_PATHS.REGISTER,
+    element: <RegisterPage />,
   },
 
   // Layout bao bọc ứng dụng (Sidebar + Header + Container)

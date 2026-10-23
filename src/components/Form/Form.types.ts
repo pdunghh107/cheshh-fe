@@ -37,33 +37,40 @@ export interface FormRef<TFormValues extends FieldValues = FieldValues> {
   formState: FormState<TFormValues>;
 }
 
-export interface FormProps<TFormValues extends FieldValues = FieldValues>
-  extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
+export interface FormProps<
+  TFormValues extends FieldValues = FieldValues,
+> extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
   form: UseFormReturn<TFormValues>;
   onSubmit: SubmitHandler<TFormValues>;
   children: ReactNode;
 }
 
-export interface InputFieldProps<TFormValues extends FieldValues = FieldValues> {
+/**
+ * Props cho InputField dạng self-contained (tự render thẻ input bên trong)
+ */
+export interface InputFieldProps<
+  TFormValues extends FieldValues = FieldValues,
+> extends Omit<InputHTMLAttributes<HTMLInputElement>, "name"> {
   name: Path<TFormValues>;
   label?: string;
   helperText?: string;
   required?: boolean;
-  children: ReactNode;
   className?: string;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
 }
 
 /** Alias cho InputFieldProps để tương thích */
 export type FormFieldProps<TFormValues extends FieldValues = FieldValues> =
   InputFieldProps<TFormValues>;
 
-export interface FormInputProps
-  extends InputHTMLAttributes<HTMLInputElement> {
+export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   $hasError?: boolean;
 }
 
-export interface InputPasswordProps<TFormValues extends FieldValues = FieldValues>
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "name" | "type"> {
+export interface InputPasswordProps<
+  TFormValues extends FieldValues = FieldValues,
+> extends Omit<InputHTMLAttributes<HTMLInputElement>, "name" | "type"> {
   name: Path<TFormValues>;
   label?: string;
   helperText?: string;
@@ -71,8 +78,9 @@ export interface InputPasswordProps<TFormValues extends FieldValues = FieldValue
   className?: string;
 }
 
-export interface InputSearchProps<TFormValues extends FieldValues = FieldValues>
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "name" | "type"> {
+export interface InputSearchProps<
+  TFormValues extends FieldValues = FieldValues,
+> extends Omit<InputHTMLAttributes<HTMLInputElement>, "name" | "type"> {
   name: Path<TFormValues>;
   label?: string;
   helperText?: string;

@@ -8,6 +8,7 @@ export const ROUTE_PATHS = {
   HOME: "/",
   LOGIN: "/login",
   LOGIN_REDIRECT: "/login?redirect=true",
+  REGISTER: "/register",
   PLAY: "/play",
   GAME: (gameId: string = ":gameId") => `/game/${gameId}`,
   LEADERBOARD: "/leaderboard",

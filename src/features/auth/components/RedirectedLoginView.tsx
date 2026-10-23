@@ -1,267 +1,198 @@
-import React from "react";
-import { useLocation,useNavigate } from "react-router";
-import styled, { keyframes } from "styled-components";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, LogIn, ShieldAlert } from "lucide-react";
+import styled from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
+import { Button } from "@/components/Button";
+import { Form, InputField, InputPassword } from "@/components/Form";
+import { type LoginFormValues, loginSchema } from "@/features/auth/auth.schema";
+import { loginApi } from "@/features/auth/authApi";
 import { useAuth } from "@/features/auth/AuthContext";
 import { ROUTE_PATHS } from "@/routes/paths";
 
+import {
+  StyledApiErrorAlert,
+  StyledAuthCard,
+  StyledAuthFooter,
+  StyledAuthHeader,
+  StyledAuthPageContainer,
+  StyledAuthSubtitle,
+  StyledAuthTitle,
+} from "./AuthStyles";
 
-/**
- * RedirectedLoginView Component
- *
- * @description Giao diện đăng nhập khi người dùng bị chặn do truy cập vào một tính năng bảo vệ (redirect=true).
- * Có cảnh báo ngắt quãng, viền nhấn mạnh và tự động chuyển về trang đích sau khi đăng nhập.
- *
- * @example
- * import { RedirectedLoginView } from '@/features/auth/components/RedirectedLoginView';
- *
- * <RedirectedLoginView />
- */
-
-export const RedirectedLoginView: React.FC = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Đọc đường dẫn trang người dùng bị chặn (mặc định nếu không có là trang chơi cờ)
-  const targetPath = (location.state as { from?: { pathname: string } })?.from?.pathname || ROUTE_PATHS.PLAY;
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    login("Grandmaster_Defender");
-    // Quay trở lại trang người dùng đang muốn vào trước đó
-    navigate(targetPath, { replace: true });
-  };
-
-  return (
-    <StyledInterruptContainer>
-      {/* Banner cảnh báo phiên truy cập bị ngắt */}
-      <StyledAlertCard>
-        <StyledAlertIcon>🔒</StyledAlertIcon>
-        <StyledAlertContent>
-          <StyledAlertHeading>Yêu cầu xác thực tài khoản</StyledAlertHeading>
-          <StyledAlertDescription>
-            Bạn vừa cố gắng truy cập tính năng cần bảo mật <strong>({targetPath})</strong>.
-            Vui lòng đăng nhập để lưu kết quả ván đấu, bảo vệ điểm Elo và tiếp tục trận chiến!
-          </StyledAlertDescription>
-        </StyledAlertContent>
-      </StyledAlertCard>
-
-      {/* Form đăng nhập dạng Priority/Focus Card */}
-      <StyledFocusedFormCard onSubmit={handleLogin}>
-        <StyledFormHeader>
-          <StyledBadge>Đăng nhập để tiếp tục</StyledBadge>
-          <StyledFormTitle>Tiếp tục ván cờ của bạn</StyledFormTitle>
-        </StyledFormHeader>
-
-        <StyledInputGroup>
-          <StyledLabel>Tài khoản</StyledLabel>
-          <StyledInput
-            type="text"
-            defaultValue="grandmaster"
-            placeholder="Tên kỳ thủ..."
-            required
-          />
-        </StyledInputGroup>
-
-        <StyledInputGroup>
-          <StyledLabel>Mật khẩu</StyledLabel>
-          <StyledInput
-            type="password"
-            defaultValue="123456"
-            placeholder="••••••••"
-            required
-          />
-        </StyledInputGroup>
-
-        <StyledActionGroup>
-          <StyledSubmitButton type="submit">
-            Xác thực & Vào ván đấu ngay
-          </StyledSubmitButton>
-
-          <StyledCancelButton
-            type="button"
-            onClick={() => navigate(ROUTE_PATHS.LOGIN)}
-          >
-            Hủy và trở về màn hình ban đầu
-          </StyledCancelButton>
-        </StyledActionGroup>
-      </StyledFocusedFormCard>
-    </StyledInterruptContainer>
-  );
-};
-
-const pulseBorder = keyframes`
-  0% {
-    box-shadow: 0 0 0 0 rgba(244, 155, 21, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(244, 155, 21, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(244, 155, 21, 0);
-  }
-`;
-
-const StyledInterruptContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 24px;
-  background: radial-gradient(circle at 50% 10%, #2b1f14 0%, ${colors.neutral.darkest} 75%);
-  color: ${colors.neutral.lightest};
-`;
-
-const StyledAlertCard = styled.div`
+const StyledAlertBox = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  width: 100%;
-  max-width: 480px;
+  gap: 12px;
   margin-bottom: 24px;
-  padding: 16px 20px;
-  background-color: rgba(43, 31, 20, 0.9);
-  border: 1px solid ${colors.warning.base};
+  padding: 16px;
+  background-color: ${colors.warning.lightest};
+  color: ${colors.warning.darkest};
+  border: 1px solid ${colors.warning.light};
   border-radius: 12px;
-  animation: ${pulseBorder} 2s infinite ease-out;
 `;
 
-const StyledAlertIcon = styled.span`
-  font-size: 28px;
+const StyledAlertIconWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  background-color: #ffffff;
+  color: ${colors.warning.dark};
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 `;
 
-const StyledAlertContent = styled.div`
+const StyledAlertTextGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
 `;
 
-const StyledAlertHeading = styled.span`
+const StyledAlertHeading = styled.h4`
+  margin: 0;
   font-size: ${fontSizes.base};
   font-weight: ${fontWeights.bold};
-  color: ${colors.warning.light};
+  color: ${colors.warning.darkest};
 `;
 
 const StyledAlertDescription = styled.p`
   margin: 0;
   font-size: ${fontSizes.small};
   line-height: 1.5;
-  color: ${colors.neutral.light};
-
-  strong {
-    color: ${colors.warning.lightest};
-  }
+  color: ${colors.neutral.dark};
 `;
 
-const StyledFocusedFormCard = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-  max-width: 480px;
-  padding: 36px;
-  background-color: ${colors.neutral.dark};
-  border: 1px solid ${colors.warning.dark};
-  border-radius: 16px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
-`;
+/**
+ * RedirectedLoginView Component
+ *
+ * @description Màn hình đăng nhập khi người dùng bị ngắt phiên truy cập vào trang bảo vệ (kèm cảnh báo và Lucide icons).
+ *
+ * @example
+ * <RedirectedLoginView />
+ */
+export const RedirectedLoginView: React.FC = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const StyledFormHeader = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-`;
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-const StyledBadge = styled.span`
-  padding: 4px 12px;
-  font-size: ${fontSizes.small};
-  font-weight: ${fontWeights.semibold};
-  background-color: ${colors.warning.darkest};
-  color: ${colors.warning.light};
-  border: 1px solid ${colors.warning.dark};
-  border-radius: 9999px;
-`;
+  const targetPath =
+    (location.state as { from?: { pathname: string } })?.from?.pathname ||
+    ROUTE_PATHS.PLAY;
 
-const StyledFormTitle = styled.h2`
-  margin: 0;
-  font-size: ${fontSizes.xxlarge};
-  font-weight: ${fontWeights.bold};
-  color: ${colors.neutral.lightest};
-`;
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      usernameOrEmail: "",
+      password: "",
+    },
+  });
 
-const StyledInputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
+  const onSubmit = async (values: LoginFormValues) => {
+    setIsLoading(true);
+    setApiError(null);
 
-const StyledLabel = styled.label`
-  font-size: ${fontSizes.small};
-  font-weight: ${fontWeights.medium};
-  color: ${colors.neutral.light};
-`;
+    try {
+      const response = await loginApi(values);
+      const token = response.accessToken || response.token;
+      const user = response.user || {
+        id: "u_" + Date.now(),
+        username: response.username || values.usernameOrEmail,
+        rating: 1800,
+      };
 
-const StyledInput = styled.input`
-  padding: 12px 16px;
-  font-size: ${fontSizes.base};
-  background-color: ${colors.neutral.darkest};
-  color: ${colors.neutral.lightest};
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  outline: none;
-  transition: all 0.2s;
+      login(user, token);
+      navigate(targetPath, { replace: true });
+    } catch (err: unknown) {
+      let message =
+        "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin tài khoản!";
+      if (err && typeof err === "object" && "response" in err) {
+        const res = (err as { response?: { data?: { message?: string } } })
+          .response;
+        if (res?.data?.message) {
+          message = res.data.message;
+        }
+      }
+      setApiError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  &:focus {
-    border-color: ${colors.warning.base};
-    box-shadow: 0 0 0 3px rgba(244, 155, 21, 0.25);
-  }
-`;
+  return (
+    <StyledAuthPageContainer>
+      <StyledAuthCard>
+        {/* Banner cảnh báo phiên bị ngắt */}
+        <StyledAlertBox>
+          <StyledAlertIconWrapper>
+            <ShieldAlert size={20} />
+          </StyledAlertIconWrapper>
+          <StyledAlertTextGroup>
+            <StyledAlertHeading>Yêu cầu xác thực tài khoản</StyledAlertHeading>
+            <StyledAlertDescription>
+              Bạn vừa cố gắng truy cập tính năng cần bảo mật (
+              <strong>{targetPath}</strong>). Vui lòng đăng nhập để tiếp tục!
+            </StyledAlertDescription>
+          </StyledAlertTextGroup>
+        </StyledAlertBox>
 
-const StyledActionGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 8px;
-`;
+        <StyledAuthHeader>
+          <StyledAuthTitle>Tiếp Tục Ván Cờ Của Bạn</StyledAuthTitle>
+          <StyledAuthSubtitle>
+            Đăng nhập để bảo toàn hệ số Elo và không bỏ lỡ trận đấu!
+          </StyledAuthSubtitle>
+        </StyledAuthHeader>
 
-const StyledSubmitButton = styled.button`
-  padding: 14px 20px;
-  font-size: ${fontSizes.large};
-  font-weight: ${fontWeights.bold};
-  background: linear-gradient(135deg, ${colors.warning.base} 0%, ${colors.warning.dark} 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+        {apiError && (
+          <StyledApiErrorAlert>
+            <AlertCircle size={20} />
+            <span>{apiError}</span>
+          </StyledApiErrorAlert>
+        )}
 
-  &:hover {
-    box-shadow: 0 6px 20px rgba(244, 155, 21, 0.4);
-    transform: translateY(-2px);
-  }
+        <Form form={form} onSubmit={onSubmit}>
+          <InputField
+            name="usernameOrEmail"
+            label="Tài khoản"
+            placeholder="nhập username hoặc email..."
+            required
+            autoFocus
+          />
 
-  &:active {
-    transform: translateY(0);
-  }
-`;
+          <InputPassword
+            name="password"
+            label="Mật khẩu"
+            placeholder="••••••••"
+            required
+          />
 
-const StyledCancelButton = styled.button`
-  padding: 10px 16px;
-  font-size: ${fontSizes.small};
-  font-weight: ${fontWeights.medium};
-  background: transparent;
-  color: ${colors.neutral.base};
-  border: none;
-  cursor: pointer;
-  transition: color 0.2s;
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            isLoading={isLoading}
+            leftIcon={<LogIn size={18} />}
+            style={{ marginTop: "8px" }}
+          >
+            Đăng Nhập & Tiếp Tục
+          </Button>
+        </Form>
 
-  &:hover {
-    color: ${colors.neutral.lightest};
-  }
-`;
+        <StyledAuthFooter>
+          <span>Quay lại</span>
+          <button type="button" onClick={() => navigate(ROUTE_PATHS.HOME)}>
+            Trang chủ
+          </button>
+        </StyledAuthFooter>
+      </StyledAuthCard>
+    </StyledAuthPageContainer>
+  );
+};

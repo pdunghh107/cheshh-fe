@@ -9,7 +9,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
  */
 
 const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -20,21 +20,17 @@ export const apiClient = axios.create({
   withCredentials: true, // BẮT BUỘC để trình duyệt tự động gửi và nhận Cookie (CORS + Cookies)
 });
 
-// Keys lưu token
-export const TOKEN_STORAGE_KEY = "chesshh_access_token";
+// Lưu trữ Access Token hoàn toàn trong bộ nhớ RAM (In-Memory) để chống tấn công XSS
+let inMemoryAccessToken: string | null = null;
 
-// Helper lấy access token
+// Helper lấy access token từ RAM
 export const getAccessToken = (): string | null => {
-  return localStorage.getItem(TOKEN_STORAGE_KEY);
+  return inMemoryAccessToken;
 };
 
-// Helper lưu access token
+// Helper lưu access token vào RAM
 export const setAccessToken = (token: string | null) => {
-  if (token) {
-    localStorage.setItem(TOKEN_STORAGE_KEY, token);
-  } else {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-  }
+  inMemoryAccessToken = token;
 };
 
 /**
@@ -45,6 +41,9 @@ apiClient.interceptors.request.use(
     const token = getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else if (config.headers) {
+      delete config.headers.Authorization;
+      delete config.headers.authorization;
     }
     return config;
   },
@@ -89,7 +88,10 @@ apiClient.interceptors.response.use(
       !originalRequest._retry
     ) {
       // Tránh lặp vô hạn nếu chính request refresh token bị 401
-      if (originalRequest.url?.includes("/auth/refresh")) {
+      if (
+        originalRequest.url?.includes("/auth/refresh-token") ||
+        originalRequest.url?.includes("/auth/refresh")
+      ) {
         setAccessToken(null);
         window.location.href = "/login?redirect=true";
         return Promise.reject(error);
@@ -114,13 +116,18 @@ apiClient.interceptors.response.use(
 
       try {
         // Backend sẽ đọc Refresh Token từ Cookie (nhờ withCredentials: true)
-        const refreshResponse = await axios.post<{ accessToken: string }>(
-          `${BASE_URL}/auth/refresh`,
-          {},
-          { withCredentials: true },
-        );
+        const refreshResponse = await axios.post<{
+          data?: { accessToken?: string; token?: string };
+          accessToken?: string;
+          token?: string;
+        }>(`${BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
 
-        const newAccessToken = refreshResponse.data.accessToken;
+        const newAccessToken =
+          refreshResponse.data.data?.accessToken ||
+          refreshResponse.data.data?.token ||
+          refreshResponse.data.accessToken ||
+          refreshResponse.data.token ||
+          null;
         setAccessToken(newAccessToken);
 
         // Chạy lại toàn bộ request trong hàng đợi với token mới

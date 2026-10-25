@@ -9,6 +9,7 @@ export interface User {
 
 export interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean;
   user: User | null;
   login: (userData?: Partial<User> | string, token?: string) => void;
   logout: () => Promise<void>;

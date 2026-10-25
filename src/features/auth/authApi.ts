@@ -1,4 +1,5 @@
 import { apiClient } from "@/services/api";
+import type { ApiResponse } from "@/types/api";
 
 export interface UserDto {
   id: string;
@@ -33,12 +34,15 @@ export interface RegisterPayload {
 export const loginApi = async (
   payload: LoginPayload,
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post<AuthResponse>("/auth/login", {
-    username: payload.usernameOrEmail,
-    email: payload.usernameOrEmail,
-    password: payload.password,
-  });
-  return response.data;
+  const response = await apiClient.post<ApiResponse<AuthResponse>>(
+    "/auth/login",
+    {
+      username: payload.usernameOrEmail,
+      email: payload.usernameOrEmail,
+      password: payload.password,
+    },
+  );
+  return response.data.data;
 };
 
 /**
@@ -48,12 +52,15 @@ export const loginApi = async (
 export const registerApi = async (
   payload: RegisterPayload,
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post<AuthResponse>("/auth/register", {
-    username: payload.username,
-    email: payload.email,
-    password: payload.password,
-  });
-  return response.data;
+  const response = await apiClient.post<ApiResponse<AuthResponse>>(
+    "/auth/register",
+    {
+      username: payload.username,
+      email: payload.email,
+      password: payload.password,
+    },
+  );
+  return response.data.data;
 };
 
 /**
@@ -62,4 +69,16 @@ export const registerApi = async (
  */
 export const logoutApi = async (): Promise<void> => {
   await apiClient.post("/auth/logout");
+};
+
+/**
+ * Gọi API Silent Refresh Token
+ * POST /api/v1/auth/refresh-token
+ * Trình duyệt tự động gửi HttpOnly Cookie chứa Refresh Token lên server
+ */
+export const refreshSilentToken = async (): Promise<AuthResponse> => {
+  const response = await apiClient.post<ApiResponse<AuthResponse>>(
+    "/auth/refresh-token",
+  );
+  return response.data.data;
 };

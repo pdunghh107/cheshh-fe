@@ -1,8 +1,9 @@
-import React, { type ReactNode, useState } from "react";
+import React, { type ReactNode, useEffect, useState } from "react";
 
+import { Loading } from "@/components/Loading";
 import { setAccessToken } from "@/services/api";
 
-import { logoutApi } from "./authApi";
+import { logoutApi, refreshSilentToken } from "./authApi";
 import {
   AUTH_STORAGE_KEY,
   AuthContext,
@@ -14,6 +15,9 @@ import {
  * AuthProvider Component
  *
  * @description Quản lý trạng thái xác thực và lưu trữ phiên đăng nhập người dùng.
+ * Áp dụng chuẩn bảo mật In-Memory Token + HttpOnly Cookie:
+ * - Access Token chỉ lưu trong RAM.
+ * - Khi người dùng F5 hoặc mở lại tab, ứng dụng tự động gọi Silent Refresh để khôi phục phiên từ Cookie.
  *
  * @example
  * <AuthProvider>
@@ -23,22 +27,55 @@ import {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem(AUTH_STORAGE_KEY) === "true";
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
 
-  const [user, setUser] = useState<User | null>(() => {
-    if (!isAuthenticated) return null;
-    const savedUser = localStorage.getItem(USER_STORAGE_KEY);
-    if (savedUser) {
+  // Silent Refresh khi ứng dụng khởi chạy lần đầu (F5 hoặc mở tab mới)
+  useEffect(() => {
+    let isMounted = true;
+
+    const restoreSession = async () => {
       try {
-        return JSON.parse(savedUser);
-      } catch {
-        // Fallback
+        const response = await refreshSilentToken();
+        const token = response.accessToken || response.token;
+
+        if (token) {
+          setAccessToken(token);
+        }
+
+        const currentUser: User = response.user || {
+          id: response.userId || "u_user",
+          username: response.username || "Kỳ thủ ChessHH",
+          email: response.email,
+          rating: response.rating || 1200,
+        };
+
+        if (isMounted) {
+          setUser(currentUser);
+          setIsAuthenticated(true);
+        }
+      } catch (err) {
+        // Chưa đăng nhập hoặc Refresh Token trong cookie đã hết hạn
+        console.warn("Silent refresh failed (chưa đăng nhập hoặc cookie hết hạn):", err);
+        if (isMounted) {
+          setIsAuthenticated(false);
+          setUser(null);
+          setAccessToken(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-    }
-    return { id: "u_1", username: "Grandmaster_HH", rating: 1850 };
-  });
+    };
+
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const login = (userData?: Partial<User> | string, token?: string) => {
     setIsAuthenticated(true);
@@ -58,9 +95,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     setUser(currentUser);
-    localStorage.setItem(AUTH_STORAGE_KEY, "true");
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
 
+    // Lưu Access Token duy nhất vào RAM
     if (token) {
       setAccessToken(token);
     }
@@ -70,7 +106,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     try {
       await logoutApi();
     } catch (error) {
-      // Dù API logout có lỗi mạng hay token hết hạn thì vẫn clear client auth state
       console.error("Lỗi khi gọi API logout:", error);
     } finally {
       setIsAuthenticated(false);
@@ -81,9 +116,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "#f8fafc",
+        }}
+      >
+        <Loading size={40} />
+      </div>
+    );
+  }
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, isLoading, user, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+

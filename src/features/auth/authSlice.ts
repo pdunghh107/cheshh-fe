@@ -26,7 +26,7 @@ export interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  isAuthenticated: !!localStorage.getItem("chesshh_access_token"),
+  isAuthenticated: false,
   isLoading: false,
   error: null,
 };

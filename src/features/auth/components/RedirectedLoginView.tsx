@@ -122,11 +122,15 @@ export const RedirectedLoginView: React.FC = () => {
       let message: string = SYSTEM_MESSAGES.SERVER_CONNECTION_ERROR;
       if (err && typeof err === "object") {
         if ("response" in err) {
-          const res = (err as { response?: { data?: { message?: string } } }).response;
+          const res = (err as { response?: { data?: { message?: string } } })
+            .response;
           if (res?.data?.message) {
             message = res.data.message;
           }
-        } else if ("message" in err && typeof (err as { message: unknown }).message === "string") {
+        } else if (
+          "message" in err &&
+          typeof (err as { message: unknown }).message === "string"
+        ) {
           message = (err as { message: string }).message;
         }
       }

@@ -24,6 +24,7 @@ export const handleSuccess = async <TResponse, TPayload>(
   thunkAPI: GetThunkAPI<{ rejectValue: string }>,
 ): Promise<void> => {
   if (config.onSuccess) {
+    console.log("[THANH CONG]");
     await config.onSuccess(data, payload, thunkAPI);
   }
 };
@@ -32,6 +33,7 @@ export const handleTransformData = <TResponse, TPayload>(
   config: ApiThunkConfigBase<TResponse, TPayload>,
   data: TResponse,
 ): TResponse => {
+  console.log("[CHUAN HOA DU LIEU]");
   return config.transformResponse
     ? (config.transformResponse(data) as TResponse)
     : data;
@@ -44,6 +46,7 @@ export const handleError = async <TResponse, TPayload>(
   thunkAPI: GetThunkAPI<{ rejectValue: string }>,
 ) => {
   if (config.onError) {
+    console.log("[THAT BAI]", err);
     await config.onError(err, payload, thunkAPI);
   }
 

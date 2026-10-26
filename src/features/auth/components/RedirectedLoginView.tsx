@@ -92,7 +92,7 @@ export const RedirectedLoginView: React.FC = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      usernameOrEmail: "",
+      email: "",
       password: "",
     },
   });
@@ -103,14 +103,8 @@ export const RedirectedLoginView: React.FC = () => {
 
     try {
       const response = await loginApi(values);
-      const user = response.user || {
-        id: "u_" + values.usernameOrEmail,
-        username: values.usernameOrEmail,
-        rating: 1200,
-      };
-
-      handleApiSuccess(response.message || AUTH_MESSAGES.LOGIN_SUCCESS);
-      login(user, response.accessToken);
+      handleApiSuccess(AUTH_MESSAGES.LOGIN_SUCCESS);
+      login(response.user, response.accessToken);
       navigate(targetPath, { replace: true });
     } catch (err: unknown) {
       const errorMsg = handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
@@ -153,9 +147,9 @@ export const RedirectedLoginView: React.FC = () => {
 
         <Form form={form} onSubmit={onSubmit}>
           <InputField
-            name="usernameOrEmail"
-            label="Tài khoản"
-            placeholder="nhập username hoặc email..."
+            name="email"
+            label="Địa chỉ Email"
+            placeholder="nhập email của bạn..."
             required
             autoFocus
           />

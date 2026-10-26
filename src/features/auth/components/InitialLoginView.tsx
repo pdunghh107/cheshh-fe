@@ -34,7 +34,7 @@ export const InitialLoginView: React.FC = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      usernameOrEmail: "",
+      email: "",
       password: "",
     },
   });
@@ -45,14 +45,8 @@ export const InitialLoginView: React.FC = () => {
 
     try {
       const response = await loginApi(values);
-      const user = response.user || {
-        id: "u_" + values.usernameOrEmail,
-        username: values.usernameOrEmail,
-        rating: 1200,
-      };
-
-      handleApiSuccess(response.message || AUTH_MESSAGES.LOGIN_SUCCESS);
-      login(user, response.accessToken);
+      handleApiSuccess(AUTH_MESSAGES.LOGIN_SUCCESS);
+      login(response.user, response.accessToken);
       navigate(ROUTE_PATHS.HOME, { replace: true });
     } catch (err: unknown) {
       const errorMsg = handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
@@ -60,11 +54,6 @@ export const InitialLoginView: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleGuestPlay = () => {
-    login("KỳThủ_Khách");
-    navigate(ROUTE_PATHS.PLAY);
   };
 
   return (
@@ -89,9 +78,9 @@ export const InitialLoginView: React.FC = () => {
 
         <Form form={form} onSubmit={onSubmit}>
           <InputField
-            name="usernameOrEmail"
-            label="Tên đăng nhập hoặc Email"
-            placeholder="nhập username hoặc email..."
+            name="email"
+            label="Địa chỉ Email"
+            placeholder="nhập email của bạn..."
             required
             autoFocus
           />
@@ -113,16 +102,6 @@ export const InitialLoginView: React.FC = () => {
             style={{ marginTop: "8px" }}
           >
             Đăng Nhập
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            fullWidth
-            onClick={handleGuestPlay}
-          >
-            Chơi Thử Với Tư Cách Khách
           </Button>
         </Form>
 

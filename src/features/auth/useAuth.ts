@@ -3,15 +3,17 @@ import { createContext, useContext } from "react";
 export interface User {
   id: string;
   username: string;
-  email?: string;
-  rating: number;
+  email: string;
+  role: string;
+  avatarUrl: string | null;
+  rating?: number;
 }
 
 export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: User | null;
-  login: (userData?: Partial<User> | string, token?: string) => void;
+  login: (user: User, token: string) => void;
   logout: () => Promise<void>;
 }
 

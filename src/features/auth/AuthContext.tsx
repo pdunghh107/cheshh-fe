@@ -1,10 +1,12 @@
 import React, { type ReactNode, useEffect, useState } from "react";
 import styled from "styled-components";
 
+import { AUTH_MESSAGES } from "@/commons/messages";
 import { Loading } from "@/components/Loading";
 import { setAccessToken } from "@/services/api";
+import { handleApiError, handleApiSuccess } from "@/utils/toast";
 
-import { logoutApi, refreshSilentToken } from "./authApi";
+import { logoutApi, refreshTokenSilent } from "./authApi";
 import { AuthContext, type User } from "./useAuth";
 
 /**
@@ -27,43 +29,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [user, setUser] = useState<User | null>(null);
 
-  // Silent Refresh khi ứng dụng khởi chạy lần đầu (F5 hoặc mở tab mới)
+  const setAuthContext = (user: User, token: string): void => {
+    setIsAuthenticated(true);
+    setUser(user);
+    setAccessToken(token);
+  };
+
+  const removeAuthContext = (): void => {
+    setIsAuthenticated(false);
+    setUser(null);
+    setAccessToken(null);
+  };
+
   useEffect(() => {
     let isMounted = true;
 
+    const safeRun = (fn: () => void): void => {
+      if (isMounted) fn();
+    };
+
     const restoreSession = async () => {
       try {
-        const response = await refreshSilentToken();
-        if (response.accessToken) {
-          setAccessToken(response.accessToken);
-        }
+        const response = await refreshTokenSilent();
+        setAccessToken(response.accessToken);
 
-        const currentUser: User = response.user || {
-          id: response.userId || "u_user",
-          username: response.username || "Kỳ thủ ChessHH",
-          email: response.email,
-          rating: response.rating || 1200,
-        };
-
-        if (isMounted) {
-          setUser(currentUser);
+        safeRun(() => {
+          setUser(response.user);
           setIsAuthenticated(true);
-        }
-      } catch (err) {
-        // Chưa đăng nhập hoặc Refresh Token trong cookie đã hết hạn
-        console.warn(
-          "Silent refresh failed (chưa đăng nhập hoặc cookie hết hạn):",
-          err,
-        );
-        if (isMounted) {
-          setIsAuthenticated(false);
-          setUser(null);
-          setAccessToken(null);
-        }
+        });
+      } catch {
+        safeRun(removeAuthContext);
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        safeRun(() => setIsLoading(false));
       }
     };
 
@@ -74,44 +71,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, []);
 
-  const login = (userData?: Partial<User> | string, token?: string) => {
-    setIsAuthenticated(true);
-    let currentUser: User;
-
-    if (typeof userData === "string") {
-      currentUser = { id: "u_1", username: userData, rating: 1850 };
-    } else if (userData) {
-      currentUser = {
-        id: userData.id || "u_1",
-        username: userData.username || "Grandmaster_HH",
-        email: userData.email,
-        rating: userData.rating || 1800,
-      };
-    } else {
-      currentUser = { id: "u_1", username: "Grandmaster_HH", rating: 1850 };
-    }
-
-    setUser(currentUser);
-
-    // Lưu Access Token duy nhất vào RAM
-    if (token) {
-      setAccessToken(token);
-    }
-  };
-
-  const removeContext = (): void => {
-    setIsAuthenticated(false);
-    setUser(null);
-    setAccessToken(null);
+  const login = (user: User, token: string) => {
+    setAuthContext(user, token);
   };
 
   const logout = async () => {
     try {
-      await logoutApi();
-    } catch (error) {
-      console.error("Lỗi khi gọi API logout:", error);
+      const message = await logoutApi();
+      handleApiSuccess(message || AUTH_MESSAGES.LOGOUT_SUCCESS);
+    } catch (err) {
+      handleApiError(err, AUTH_MESSAGES.LOGOUT_FAILED);
     } finally {
-      removeContext();
+      removeAuthContext();
     }
   };
 

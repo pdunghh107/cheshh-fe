@@ -11,7 +11,7 @@ if (!BASE_URL) {
 }
 
 const axiosConfig = {
-  baseUrl: BASE_URL,
+  baseURL: BASE_URL,
   timeout: 15000,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
@@ -72,8 +72,6 @@ apiClient.interceptors.response.use(
   (response) => {
     // Tự động unwrap envelope ApiResponse thành data nghiệp vụ
     response.data = unwrapApiResponse(response.data);
-    console.log("[RESPONSE KHI UNWRAP]: ", response);
-    console.log("[RESPONSE DATA KHI UNWRAP]: ", response.data);
     return response;
   },
   async (error: AxiosError) => {

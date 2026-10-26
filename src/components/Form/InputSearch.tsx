@@ -1,6 +1,7 @@
 import React from "react";
 import type { FieldValues, Path, PathValue } from "react-hook-form";
 import { useFormContext } from "react-hook-form";
+import { Search, X } from "lucide-react";
 
 import {
   StyledAdornmentButton,
@@ -69,7 +70,9 @@ export const InputSearch = <TFormValues extends FieldValues = FieldValues>({
       )}
 
       <StyledInputWrapper>
-        <StyledAdornmentIcon $position="left">🔍</StyledAdornmentIcon>
+        <StyledAdornmentIcon $position="left">
+          <Search size={18} />
+        </StyledAdornmentIcon>
 
         <StyledInput
           id={inputId}
@@ -91,7 +94,7 @@ export const InputSearch = <TFormValues extends FieldValues = FieldValues>({
             aria-label="Xóa nội dung tìm kiếm"
             tabIndex={-1}
           >
-            ✕
+            <X size={16} />
           </StyledAdornmentButton>
         )}
       </StyledInputWrapper>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { type FieldValues, useFormContext } from "react-hook-form";
+import { Eye, EyeOff } from "lucide-react";
 
 import {
   StyledAdornmentButton,
@@ -74,7 +75,7 @@ export const InputPassword = <TFormValues extends FieldValues = FieldValues>({
           aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
           tabIndex={-1}
         >
-          {showPassword ? "🙈" : "👁️"}
+          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
         </StyledAdornmentButton>
       </StyledInputWrapper>
 

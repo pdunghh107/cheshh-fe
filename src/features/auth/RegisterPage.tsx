@@ -63,16 +63,8 @@ export const RegisterPage: React.FC = () => {
         password: values.password,
       });
 
-      const token = response.accessToken || response.token;
-      const user = response.user || {
-        id: response.userId || "u_" + values.username,
-        username: response.username || values.username,
-        email: response.email || values.email,
-        rating: response.rating || 1200,
-      };
-
-      handleApiSuccess(response.message || AUTH_MESSAGES.REGISTER_SUCCESS);
-      login(user, token);
+      handleApiSuccess(AUTH_MESSAGES.REGISTER_SUCCESS);
+      login(response.user, response.accessToken);
       navigate(ROUTE_PATHS.HOME, { replace: true });
     } catch (err: unknown) {
       handleApiError(err, AUTH_MESSAGES.REGISTER_FAILED);

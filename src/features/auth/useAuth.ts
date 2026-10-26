@@ -19,17 +19,6 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
 
-export const AUTH_STORAGE_KEY = "chesshh_auth_state";
-export const USER_STORAGE_KEY = "chesshh_user_data";
-
-/**
- * useAuth Hook
- *
- * @description Hook truy cập AuthContext để lấy thông tin đăng nhập, token và hàm login/logout.
- *
- * @example
- * const { user, isAuthenticated, login, logout } = useAuth();
- */
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {

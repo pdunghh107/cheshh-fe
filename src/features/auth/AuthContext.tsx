@@ -1,15 +1,11 @@
 import React, { type ReactNode, useEffect, useState } from "react";
+import styled from "styled-components";
 
 import { Loading } from "@/components/Loading";
 import { setAccessToken } from "@/services/api";
 
 import { logoutApi, refreshSilentToken } from "./authApi";
-import {
-  AUTH_STORAGE_KEY,
-  AuthContext,
-  type User,
-  USER_STORAGE_KEY,
-} from "./useAuth";
+import { AuthContext, type User } from "./useAuth";
 
 /**
  * AuthProvider Component
@@ -38,10 +34,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     const restoreSession = async () => {
       try {
         const response = await refreshSilentToken();
-        const token = response.accessToken || response.token;
-
-        if (token) {
-          setAccessToken(token);
+        if (response.accessToken) {
+          setAccessToken(response.accessToken);
         }
 
         const currentUser: User = response.user || {
@@ -57,7 +51,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
       } catch (err) {
         // Chưa đăng nhập hoặc Refresh Token trong cookie đã hết hạn
-        console.warn("Silent refresh failed (chưa đăng nhập hoặc cookie hết hạn):", err);
+        console.warn(
+          "Silent refresh failed (chưa đăng nhập hoặc cookie hết hạn):",
+          err,
+        );
         if (isMounted) {
           setIsAuthenticated(false);
           setUser(null);
@@ -102,34 +99,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const removeContext = (): void => {
+    setIsAuthenticated(false);
+    setUser(null);
+    setAccessToken(null);
+  };
+
   const logout = async () => {
     try {
       await logoutApi();
     } catch (error) {
       console.error("Lỗi khi gọi API logout:", error);
     } finally {
-      setIsAuthenticated(false);
-      setUser(null);
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-      localStorage.removeItem(USER_STORAGE_KEY);
-      setAccessToken(null);
+      removeContext();
     }
   };
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100vw",
-          height: "100vh",
-          backgroundColor: "#f8fafc",
-        }}
-      >
+      <LoadingWrapper>
         <Loading size={40} />
-      </div>
+      </LoadingWrapper>
     );
   }
 
@@ -142,3 +132,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
+const LoadingWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f8fafc;
+`;

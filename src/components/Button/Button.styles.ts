@@ -1,4 +1,4 @@
-import styled, { css, keyframes } from "styled-components";
+import styled, { css } from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
@@ -8,15 +8,6 @@ import type {
   ButtonVariant,
   StyledButtonProps,
 } from "./Button.types";
-
-const spinAnimation = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`;
 
 const getVariantStyles = ($variant: ButtonVariant) => {
   switch ($variant) {
@@ -180,19 +171,7 @@ export const StyledButton = styled.button<StyledButtonProps>`
     `}
 `;
 
-export const StyledSpinner = styled.span<{ $size: ButtonSize }>`
-  display: inline-block;
-  width: ${(props) =>
-    props.$size === "sm" ? "14px" : props.$size === "lg" ? "18px" : "16px"};
-  height: ${(props) =>
-    props.$size === "sm" ? "14px" : props.$size === "lg" ? "18px" : "16px"};
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ${spinAnimation} 0.75s linear infinite;
-`;
-
-export const StyledIconWrapper = styled.span`
+export const IconWrapper = styled.span`
   display: inline-flex;
   flex-shrink: 0;
   justify-content: center;

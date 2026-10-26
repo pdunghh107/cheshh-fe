@@ -1,8 +1,9 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
 import { MainPage } from "@/features/dashboard";
+import { ComponentShowcasePage } from "@/features/dev";
 import { PlayChessPage } from "@/features/game/PlayChessPage";
 import { MainLayout } from "@/layouts";
 import { HomeEntryPage } from "@/routes/HomeEntryPage";
@@ -13,11 +14,21 @@ import { ProtectedRoute } from "@/routes/ProtectedRoute";
  * App Router Configuration
  *
  * @description Định nghĩa tập trung toàn bộ cây Route cho ứng dụng ChessHH theo chuẩn React Router v7/v8.
+ * Bao gồm cơ chế kích hoạt route kiểm thử UI Components (/dev/components) chỉ khi ở môi trường Development (NODE_ENV=development).
  *
  * @example
  * import { router } from '@/routes';
  * <RouterProvider router={router} />
  */
+
+const devRoutes: RouteObject[] = import.meta.env.DEV
+  ? [
+      {
+        path: ROUTE_PATHS.DEV_COMPONENTS,
+        element: <ComponentShowcasePage />,
+      },
+    ]
+  : [];
 
 export const router = createBrowserRouter([
   // Public Route: Đăng nhập
@@ -30,6 +41,9 @@ export const router = createBrowserRouter([
     path: ROUTE_PATHS.REGISTER,
     element: <RegisterPage />,
   },
+
+  // Development Only Routes: Component Showcase
+  ...devRoutes,
 
   // Layout bao bọc ứng dụng (Sidebar + Header + Container)
   {

@@ -13,5 +13,6 @@ export const ROUTE_PATHS = {
   GAME: (gameId: string = ":gameId") => `/game/${gameId}`,
   LEADERBOARD: "/leaderboard",
   PROFILE: "/profile",
+  DEV_COMPONENTS: "/dev/components",
   NOT_FOUND: "*",
 } as const;

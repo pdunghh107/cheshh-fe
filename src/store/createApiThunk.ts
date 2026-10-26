@@ -45,7 +45,6 @@ export function createApiThunk<TResponse = unknown, TPayload = void>(
       await handleSuccess(config, responseData, payload, thunkAPI);
       return handleTransformData(config, responseData);
     } catch (err: unknown) {
-      console.log("[CREATE API THUNK] LOI TAI: ", err);
       return handleError(config, err, payload, thunkAPI);
     }
   };

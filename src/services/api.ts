@@ -1,34 +1,30 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
-/**
- * Axios Instance Client
- *
- * Cấu hình chuẩn cho hệ thống Backend hỗ trợ JWT, CORS và Cookie.
- * - withCredentials: true -> Tự động gửi kèm HttpOnly Cookie qua các domain khác nhau.
- * - baseURL: Đọc từ biến môi trường VITE_API_BASE_URL.
- */
+import { type ApiResponse, unwrapApiResponse } from "@/types/api";
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const apiClient = axios.create({
-  baseURL: BASE_URL,
+if (!BASE_URL) {
+  throw new Error(
+    "Lỗi cấu hình: Biến môi trường 'VITE_API_BASE_URL' chưa được thiết lập trong file .env!",
+  );
+}
+
+const axiosConfig = {
+  baseUrl: BASE_URL,
   timeout: 15000,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true, // BẮT BUỘC để trình duyệt tự động gửi và nhận Cookie (CORS + Cookies)
-});
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+};
 
-// Lưu trữ Access Token hoàn toàn trong bộ nhớ RAM (In-Memory) để chống tấn công XSS
+export const apiClient = axios.create(axiosConfig);
+
 let inMemoryAccessToken: string | null = null;
 
-// Helper lấy access token từ RAM
 export const getAccessToken = (): string | null => {
   return inMemoryAccessToken;
 };
 
-// Helper lưu access token vào RAM
 export const setAccessToken = (token: string | null) => {
   inMemoryAccessToken = token;
 };
@@ -74,6 +70,10 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 apiClient.interceptors.response.use(
   (response) => {
+    // Tự động unwrap envelope ApiResponse thành data nghiệp vụ
+    response.data = unwrapApiResponse(response.data);
+    console.log("[RESPONSE KHI UNWRAP]: ", response);
+    console.log("[RESPONSE DATA KHI UNWRAP]: ", response.data);
     return response;
   },
   async (error: AxiosError) => {
@@ -88,10 +88,7 @@ apiClient.interceptors.response.use(
       !originalRequest._retry
     ) {
       // Tránh lặp vô hạn nếu chính request refresh token bị 401
-      if (
-        originalRequest.url?.includes("/auth/refresh-token") ||
-        originalRequest.url?.includes("/auth/refresh")
-      ) {
+      if (originalRequest.url?.includes("/auth/refresh-token")) {
         setAccessToken(null);
         window.location.href = "/login?redirect=true";
         return Promise.reject(error);
@@ -116,18 +113,15 @@ apiClient.interceptors.response.use(
 
       try {
         // Backend sẽ đọc Refresh Token từ Cookie (nhờ withCredentials: true)
-        const refreshResponse = await axios.post<{
-          data?: { accessToken?: string; token?: string };
+        const refreshResponse = await axios.post<
+          ApiResponse<{ accessToken?: string; token?: string }>
+        >(`${BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
+
+        const authData = unwrapApiResponse<{
           accessToken?: string;
           token?: string;
-        }>(`${BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
-
-        const newAccessToken =
-          refreshResponse.data.data?.accessToken ||
-          refreshResponse.data.data?.token ||
-          refreshResponse.data.accessToken ||
-          refreshResponse.data.token ||
-          null;
+        }>(refreshResponse.data);
+        const newAccessToken = authData.accessToken || authData.token || null;
         setAccessToken(newAccessToken);
 
         // Chạy lại toàn bộ request trong hàng đợi với token mới

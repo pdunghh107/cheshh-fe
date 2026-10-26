@@ -7,7 +7,7 @@ import styled from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
-import { AUTH_MESSAGES, SYSTEM_MESSAGES } from "@/commons/messages";
+import { AUTH_MESSAGES } from "@/commons/messages";
 import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
 import { type LoginFormValues, loginSchema } from "@/features/auth/auth.schema";
@@ -103,38 +103,18 @@ export const RedirectedLoginView: React.FC = () => {
 
     try {
       const response = await loginApi(values);
-      const token = response.accessToken || response.token;
-      if (!response.user && !response.username) {
-        throw new Error(SYSTEM_MESSAGES.UNKNOWN_ERROR);
-      }
-
       const user = response.user || {
         id: "u_" + values.usernameOrEmail,
-        username: response.username || values.usernameOrEmail,
-        rating: 1800,
+        username: values.usernameOrEmail,
+        rating: 1200,
       };
 
       handleApiSuccess(response.message || AUTH_MESSAGES.LOGIN_SUCCESS);
-      login(user, token);
+      login(user, response.accessToken);
       navigate(targetPath, { replace: true });
     } catch (err: unknown) {
-      handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
-      let message: string = SYSTEM_MESSAGES.SERVER_CONNECTION_ERROR;
-      if (err && typeof err === "object") {
-        if ("response" in err) {
-          const res = (err as { response?: { data?: { message?: string } } })
-            .response;
-          if (res?.data?.message) {
-            message = res.data.message;
-          }
-        } else if (
-          "message" in err &&
-          typeof (err as { message: unknown }).message === "string"
-        ) {
-          message = (err as { message: string }).message;
-        }
-      }
-      setApiError(message);
+      const errorMsg = handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
+      setApiError(errorMsg);
     } finally {
       setIsLoading(false);
     }

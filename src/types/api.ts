@@ -1,8 +1,3 @@
-/**
- * Cấu trúc Response thành công từ Backend
- *
- * @see com.pdunghh.shared.api.ApiResponse
- */
 export interface ApiResponse<T> {
   success: boolean;
   traceId?: string;
@@ -13,22 +8,12 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-/**
- * Chi tiết lỗi từng trường validation (nếu có)
- *
- * @see com.pdunghh.shared.api.ApiErrorDetail
- */
 export interface ApiErrorDetail {
   field?: string;
   code?: string;
   message?: string;
 }
 
-/**
- * Cấu trúc Error Response từ Backend
- *
- * @see com.pdunghh.shared.api.ApiError
- */
 export interface ApiError {
   success: boolean;
   traceId?: string;
@@ -39,4 +24,21 @@ export interface ApiError {
   serviceName?: string;
   path?: string;
   errors?: ApiErrorDetail[];
+}
+
+/**
+ * Trích xuất dữ liệu nghiệp vụ bên trong envelope ApiResponse của Backend.
+ * Tự động kiểm tra cấu trúc ApiResponse<T> ({ success: true, data: ... }).
+ * Nếu payload hợp lệ, hàm trả về payload.data; ngược lại giữ nguyên payload ban đầu.
+ */
+export function unwrapApiResponse<T>(payload: unknown): T {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "success" in payload &&
+    "data" in payload
+  ) {
+    return (payload as ApiResponse<T>).data;
+  }
+  return payload as T;
 }

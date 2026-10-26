@@ -1,24 +1,51 @@
+import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { RouterProvider } from "react-router";
+import styled from "styled-components";
 
-import { AuthProvider } from "@/features/auth/AuthContext";
+import { Loading } from "@/components/Loading";
+import { restoreAuthSession } from "@/features/auth/authSlice";
 import { router } from "@/routes";
+import { useAppDispatch, useAppSelector } from "@/store";
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f8fafc;
+`;
 
 /**
  * App Root Component
  *
- * @description Điểm khởi đầu của ứng dụng, tích hợp AuthProvider, React Router Data Provider và Toaster notification.
+ * @description Điểm khởi đầu của ứng dụng, tự động khôi phục phiên đăng nhập (Silent Refresh) từ Cookie vào Redux Toolkit.
  *
  * @example
- * // Sử dụng trong main.tsx:
  * <App />
  */
 function App() {
+  const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(restoreAuthSession());
+  }, [dispatch]);
+
+  if (isLoading) {
+    return (
+      <LoadingContainer>
+        <Loading size={40} />
+      </LoadingContainer>
+    );
+  }
+
   return (
-    <AuthProvider>
+    <>
       <Toaster position="top-right" reverseOrder={false} />
       <RouterProvider router={router} />
-    </AuthProvider>
+    </>
   );
 }
 

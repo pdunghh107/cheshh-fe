@@ -3,8 +3,9 @@ import { useNavigate } from "react-router";
 import { LogIn, LogOut, Trophy, User as UserIcon } from "lucide-react";
 
 import { Button } from "@/components/Button";
-import { useAuth } from "@/features/auth/useAuth";
+import { logoutUser } from "@/features/auth/authSlice";
 import { ROUTE_PATHS } from "@/routes/paths";
+import { useAppDispatch, useAppSelector } from "@/store";
 
 import {
   StyledAvatarPlaceholder,
@@ -38,8 +39,9 @@ export const Header: React.FC<HeaderProps> = ({
   title = "ChessHH Arena",
   className,
 }) => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLoginClick = () => {
@@ -49,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
   const handleLogoutClick = async () => {
     try {
       setIsLoggingOut(true);
-      await logout();
+      await dispatch(logoutUser()).unwrap();
       navigate(ROUTE_PATHS.HOME);
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);

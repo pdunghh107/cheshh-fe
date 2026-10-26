@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/Button";
-import { useAuth } from "@/features/auth/useAuth";
 import { ROUTE_PATHS } from "@/routes/paths";
+import { useAppSelector } from "@/store";
 
 import {
   StyledBannerSubtitle,
@@ -79,7 +79,7 @@ const GAME_MODES: GameMode[] = [
  * <MainPage />
  */
 export const MainPage: React.FC = () => {
-  const { user } = useAuth();
+  const user = useAppSelector((state) => state.auth.user);
   const navigate = useNavigate();
 
   const [selectedModeId, setSelectedModeId] = useState<string>("rapid");

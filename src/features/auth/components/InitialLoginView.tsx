@@ -4,14 +4,12 @@ import { Link, useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, LogIn, Swords } from "lucide-react";
 
-import { AUTH_MESSAGES } from "@/commons/messages";
 import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
 import { type LoginFormValues, loginSchema } from "@/features/auth/auth.schema";
-import { loginApi } from "@/features/auth/authApi";
-import { useAuth } from "@/features/auth/useAuth";
+import { loginUser } from "@/features/auth/authSlice";
 import { ROUTE_PATHS } from "@/routes/paths";
-import { handleApiError, handleApiSuccess } from "@/utils/toast";
+import { useAppDispatch } from "@/store";
 
 import {
   StyledApiErrorAlert,
@@ -25,7 +23,7 @@ import {
 } from "./AuthStyles";
 
 export const InitialLoginView: React.FC = () => {
-  const { login } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -44,13 +42,10 @@ export const InitialLoginView: React.FC = () => {
     setApiError(null);
 
     try {
-      const response = await loginApi(values);
-      handleApiSuccess(AUTH_MESSAGES.LOGIN_SUCCESS);
-      login(response.user, response.accessToken);
+      await dispatch(loginUser(values)).unwrap();
       navigate(ROUTE_PATHS.HOME, { replace: true });
     } catch (err: unknown) {
-      const errorMsg = handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
-      setApiError(errorMsg);
+      setApiError(typeof err === "string" ? err : "Đăng nhập thất bại");
     } finally {
       setIsLoading(false);
     }

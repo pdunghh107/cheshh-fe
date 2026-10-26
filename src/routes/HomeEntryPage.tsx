@@ -1,8 +1,8 @@
 import React from "react";
 
-import { useAuth } from "@/features/auth/useAuth";
 import { MainPage } from "@/features/dashboard";
 import { OnboardingPage } from "@/features/onboarding";
+import { useAppSelector } from "@/store";
 
 /**
  * HomeEntryPage Component
@@ -12,7 +12,7 @@ import { OnboardingPage } from "@/features/onboarding";
  * - Nếu đã đăng nhập (isAuthenticated = true): Hiển thị MainPage (Dashboard chọn chế độ cờ & ghép trận)
  */
 export const HomeEntryPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   return isAuthenticated ? <MainPage /> : <OnboardingPage />;
 };

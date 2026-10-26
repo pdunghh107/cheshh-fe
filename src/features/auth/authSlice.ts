@@ -1,22 +1,20 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import { AUTH_MESSAGES } from "@/commons/messages";
+import {
+  type AuthResponse,
+  loginApi,
+  type LoginPayload,
+  logoutApi,
+  refreshTokenSilent,
+  type UserDto,
+} from "@/features/auth/authApi";
 import { setAccessToken } from "@/services/api";
-import { createApiThunk } from "@/store/createApiThunk";
+import { extractErrorMessage } from "@/store/utils/extractErrorMessage";
+import { handleApiError, handleApiSuccess } from "@/utils/toast";
 
-/**
- * User Interface
- */
-export interface User {
-  id: string;
-  username: string;
-  email?: string;
-  rating: number;
-}
+export type User = UserDto;
 
-/**
- * Auth State Interface
- */
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -27,72 +25,105 @@ export interface AuthState {
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true, // true khi khởi tạo để đợi restore session
   error: null,
 };
 
-export interface LoginCredentials {
-  username: string;
-  password?: string;
-}
-
-export interface LoginResponse {
-  user: User;
-  accessToken: string;
-}
+/**
+ * Async Thunk: Khôi phục phiên đăng nhập khi F5 hoặc mở lại ứng dụng
+ */
+export const restoreAuthSession = createAsyncThunk<
+  AuthResponse,
+  void,
+  { rejectValue: string }
+>("auth/restoreAuthSession", async (_, thunkAPI) => {
+  try {
+    const data = await refreshTokenSilent();
+    setAccessToken(data.accessToken);
+    return data;
+  } catch (err: unknown) {
+    setAccessToken(null);
+    return thunkAPI.rejectWithValue(extractErrorMessage(err));
+  }
+});
 
 /**
  * Async Thunk: Đăng nhập
- * Tự động hóa: POST /auth/login, bắt lỗi rejectWithValue, và lưu access token qua onSuccess
  */
-export const loginUser = createApiThunk<LoginResponse, LoginCredentials>(
-  "auth/loginUser",
-  {
-    method: "post",
-    url: "/auth/login",
-    defaultErrorMessage: AUTH_MESSAGES.LOGIN_FAILED,
-    onSuccess: (data) => {
-      // Custom handler: tự động lưu access token vào storage
-      if (data.accessToken) {
-        setAccessToken(data.accessToken);
-      }
-    },
-  },
-);
+export const loginUser = createAsyncThunk<
+  AuthResponse,
+  LoginPayload,
+  { rejectValue: string }
+>("auth/loginUser", async (payload, thunkAPI) => {
+  try {
+    const data = await loginApi(payload);
+    setAccessToken(data.accessToken);
+    handleApiSuccess(AUTH_MESSAGES.LOGIN_SUCCESS);
+    return data;
+  } catch (err: unknown) {
+    const errorMsg = handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
+    return thunkAPI.rejectWithValue(errorMsg);
+  }
+});
 
 /**
  * Async Thunk: Đăng xuất
- * Tự động hóa: POST /auth/logout và dọn dẹp access token
  */
-export const logoutUser = createApiThunk<void, void>("auth/logoutUser", {
-  method: "post",
-  url: "/auth/logout",
-  onSuccess: () => {
+export const logoutUser = createAsyncThunk<
+  string,
+  void,
+  { rejectValue: string }
+>("auth/logoutUser", async (_, thunkAPI) => {
+  try {
+    const message = await logoutApi();
+    handleApiSuccess(message || AUTH_MESSAGES.LOGOUT_SUCCESS);
+    return message;
+  } catch (err: unknown) {
+    handleApiError(err, AUTH_MESSAGES.LOGOUT_FAILED);
+    return thunkAPI.rejectWithValue(extractErrorMessage(err));
+  } finally {
     setAccessToken(null);
-  },
-  onError: () => {
-    // Dù backend lỗi vẫn xóa token ở client
-    setAccessToken(null);
-  },
+  }
 });
 
 export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
+    setAuth: (
+      state,
+      action: PayloadAction<{ user: User; accessToken: string }>,
+    ) => {
+      state.user = action.payload.user;
       state.isAuthenticated = true;
+      state.isLoading = false;
+      state.error = null;
+      setAccessToken(action.payload.accessToken);
     },
     clearAuth: (state) => {
       state.user = null;
       state.isAuthenticated = false;
+      state.isLoading = false;
       state.error = null;
       setAccessToken(null);
     },
   },
   extraReducers: (builder) => {
     builder
+      // Restore Session
+      .addCase(restoreAuthSession.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(restoreAuthSession.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+      })
+      .addCase(restoreAuthSession.rejected, (state) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+      })
       // Login
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
@@ -105,16 +136,21 @@ export const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.isAuthenticated = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? AUTH_MESSAGES.LOGIN_FAILED;
       })
       // Logout
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
+        state.isLoading = false;
+      })
+      .addCase(logoutUser.rejected, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isLoading = false;
       });
   },
 });
 
-export const { setUser, clearAuth } = authSlice.actions;
+export const { setAuth, clearAuth } = authSlice.actions;
 export default authSlice.reducer;

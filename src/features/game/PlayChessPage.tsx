@@ -4,11 +4,12 @@ import styled from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
-import { useAuth } from "@/features/auth/useAuth";
+import { logoutUser } from "@/features/auth/authSlice";
 import { Board } from "@/features/game/components/board/Board";
 import { PromotionBoard } from "@/features/game/components/promotion/PromotionBoard";
 import { useChessGame } from "@/features/game/hooks/useChessGame";
 import { ROUTE_PATHS } from "@/routes/paths";
+import { useAppDispatch, useAppSelector } from "@/store";
 
 
 /**
@@ -26,8 +27,9 @@ import { ROUTE_PATHS } from "@/routes/paths";
  */
 
 export const PlayChessPage: React.FC = () => {
-  const { user, logout } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const user = useAppSelector((state) => state.auth.user);
 
   // Sử dụng custom hook tự viết useChessGame để quản lý bàn cờ
   const {
@@ -45,9 +47,13 @@ export const PlayChessPage: React.FC = () => {
     resetGame,
   } = useChessGame();
 
-  const handleLogout = () => {
-    logout();
-    navigate(ROUTE_PATHS.LOGIN);
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate(ROUTE_PATHS.LOGIN);
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+    }
   };
 
 

@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Crown, UserPlus } from "lucide-react";
 
-import { AUTH_MESSAGES, SYSTEM_MESSAGES } from "@/commons/messages";
+import { AUTH_MESSAGES } from "@/commons/messages";
 import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
 import {
@@ -12,8 +12,9 @@ import {
   registerSchema,
 } from "@/features/auth/auth.schema";
 import { registerApi } from "@/features/auth/authApi";
-import { useAuth } from "@/features/auth/useAuth";
+import { setAuth } from "@/features/auth/authSlice";
 import { ROUTE_PATHS } from "@/routes/paths";
+import { useAppDispatch } from "@/store";
 import { handleApiError, handleApiSuccess } from "@/utils/toast";
 
 import {
@@ -36,7 +37,7 @@ import {
  * <RegisterPage />
  */
 export const RegisterPage: React.FC = () => {
-  const { login } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -64,26 +65,16 @@ export const RegisterPage: React.FC = () => {
       });
 
       handleApiSuccess(AUTH_MESSAGES.REGISTER_SUCCESS);
-      login(response.user, response.accessToken);
+      dispatch(
+        setAuth({
+          user: response.user,
+          accessToken: response.accessToken,
+        }),
+      );
       navigate(ROUTE_PATHS.HOME, { replace: true });
     } catch (err: unknown) {
-      handleApiError(err, AUTH_MESSAGES.REGISTER_FAILED);
-      let message: string = SYSTEM_MESSAGES.SERVER_CONNECTION_ERROR;
-      if (err && typeof err === "object") {
-        if ("response" in err) {
-          const res = (err as { response?: { data?: { message?: string } } })
-            .response;
-          if (res?.data?.message) {
-            message = res.data.message;
-          }
-        } else if (
-          "message" in err &&
-          typeof (err as { message: unknown }).message === "string"
-        ) {
-          message = (err as { message: string }).message;
-        }
-      }
-      setApiError(message);
+      const errorMsg = handleApiError(err, AUTH_MESSAGES.REGISTER_FAILED);
+      setApiError(errorMsg);
     } finally {
       setIsLoading(false);
     }

@@ -1,18 +1,10 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React from "react";
 import { Link, useNavigate } from "react-router";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, LogIn, Swords } from "lucide-react";
+import { Swords } from "lucide-react";
 
-import { Button } from "@/components/Button";
-import { Form, InputField, InputPassword } from "@/components/Form";
-import { type LoginFormValues, loginSchema } from "@/features/auth/auth.schema";
-import { loginUser } from "@/features/auth/authSlice";
 import { ROUTE_PATHS } from "@/routes/paths";
-import { useAppDispatch } from "@/store";
 
 import {
-  StyledApiErrorAlert,
   StyledAuthCard,
   StyledAuthFooter,
   StyledAuthHeader,
@@ -21,35 +13,18 @@ import {
   StyledAuthTitle,
   StyledLogoBadge,
 } from "./AuthStyles";
+import { LoginForm } from "./LoginForm";
 
+/**
+ * InitialLoginView Component
+ *
+ * @description Màn hình đăng nhập khởi tạo mặc định khi người dùng chủ động vào `/login`.
+ *
+ * @example
+ * <InitialLoginView />
+ */
 export const InitialLoginView: React.FC = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
-
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  const onSubmit = async (values: LoginFormValues) => {
-    setIsLoading(true);
-    setApiError(null);
-
-    try {
-      await dispatch(loginUser(values)).unwrap();
-      navigate(ROUTE_PATHS.HOME, { replace: true });
-    } catch (err: unknown) {
-      setApiError(typeof err === "string" ? err : "Đăng nhập thất bại");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <StyledAuthPageContainer>
@@ -64,41 +39,9 @@ export const InitialLoginView: React.FC = () => {
           </StyledAuthSubtitle>
         </StyledAuthHeader>
 
-        {apiError && (
-          <StyledApiErrorAlert>
-            <AlertCircle size={20} />
-            <span>{apiError}</span>
-          </StyledApiErrorAlert>
-        )}
-
-        <Form form={form} onSubmit={onSubmit}>
-          <InputField
-            name="email"
-            label="Địa chỉ Email"
-            placeholder="nhập email của bạn..."
-            required
-            autoFocus
-          />
-
-          <InputPassword
-            name="password"
-            label="Mật khẩu"
-            placeholder="••••••••"
-            required
-          />
-
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            fullWidth
-            isLoading={isLoading}
-            leftIcon={<LogIn size={18} />}
-            style={{ marginTop: "8px" }}
-          >
-            Đăng Nhập
-          </Button>
-        </Form>
+        <LoginForm
+          onSuccess={() => navigate(ROUTE_PATHS.HOME, { replace: true })}
+        />
 
         <StyledAuthFooter>
           <span>Chưa có tài khoản?</span>

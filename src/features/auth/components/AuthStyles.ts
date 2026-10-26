@@ -61,19 +61,6 @@ export const StyledAuthSubtitle = styled.p`
   color: ${colors.neutral.base};
 `;
 
-export const StyledApiErrorAlert = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  font-size: ${fontSizes.base};
-  font-weight: ${fontWeights.medium};
-  background-color: ${colors.danger.lightest};
-  color: ${colors.danger.darkest};
-  border: 1px solid ${colors.danger.light};
-  border-radius: 8px;
-`;
 
 export const StyledAuthFooter = styled.div`
   display: flex;

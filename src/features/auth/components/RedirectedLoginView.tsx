@@ -1,21 +1,14 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React from "react";
 import { useLocation, useNavigate } from "react-router";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, LogIn, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import styled from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
-import { Button } from "@/components/Button";
-import { Form, InputField, InputPassword } from "@/components/Form";
-import { type LoginFormValues, loginSchema } from "@/features/auth/auth.schema";
-import { loginUser } from "@/features/auth/authSlice";
+import { LoginForm } from "@/features/auth/components/LoginForm";
 import { ROUTE_PATHS } from "@/routes/paths";
-import { useAppDispatch } from "@/store";
 
 import {
-  StyledApiErrorAlert,
   StyledAuthCard,
   StyledAuthFooter,
   StyledAuthHeader,
@@ -70,44 +63,18 @@ const StyledAlertDescription = styled.p`
 /**
  * RedirectedLoginView Component
  *
- * @description Màn hình đăng nhập khi người dùng bị ngắt phiên truy cập vào trang bảo vệ (kèm cảnh báo và Lucide icons).
+ * @description Màn hình đăng nhập khi người dùng bị ngắt phiên truy cập vào trang bảo vệ (kèm cảnh báo và LoginForm tái sử dụng).
  *
  * @example
  * <RedirectedLoginView />
  */
 export const RedirectedLoginView: React.FC = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
 
   const targetPath =
     (location.state as { from?: { pathname: string } })?.from?.pathname ||
     ROUTE_PATHS.PLAY;
-
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  const onSubmit = async (values: LoginFormValues) => {
-    setIsLoading(true);
-    setApiError(null);
-
-    try {
-      await dispatch(loginUser(values)).unwrap();
-      navigate(targetPath, { replace: true });
-    } catch (err: unknown) {
-      setApiError(typeof err === "string" ? err : "Đăng nhập thất bại");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <StyledAuthPageContainer>
@@ -133,41 +100,7 @@ export const RedirectedLoginView: React.FC = () => {
           </StyledAuthSubtitle>
         </StyledAuthHeader>
 
-        {apiError && (
-          <StyledApiErrorAlert>
-            <AlertCircle size={20} />
-            <span>{apiError}</span>
-          </StyledApiErrorAlert>
-        )}
-
-        <Form form={form} onSubmit={onSubmit}>
-          <InputField
-            name="email"
-            label="Địa chỉ Email"
-            placeholder="nhập email của bạn..."
-            required
-            autoFocus
-          />
-
-          <InputPassword
-            name="password"
-            label="Mật khẩu"
-            placeholder="••••••••"
-            required
-          />
-
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            fullWidth
-            isLoading={isLoading}
-            leftIcon={<LogIn size={18} />}
-            style={{ marginTop: "8px" }}
-          >
-            Đăng Nhập & Tiếp Tục
-          </Button>
-        </Form>
+        <LoginForm onSuccess={() => navigate(targetPath, { replace: true })} />
 
         <StyledAuthFooter>
           <span>Quay lại</span>
@@ -179,3 +112,4 @@ export const RedirectedLoginView: React.FC = () => {
     </StyledAuthPageContainer>
   );
 };
+

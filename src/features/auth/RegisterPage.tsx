@@ -2,23 +2,19 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Crown, UserPlus } from "lucide-react";
+import { Crown, UserPlus } from "lucide-react";
 
-import { AUTH_MESSAGES } from "@/commons/messages";
 import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
 import {
   type RegisterFormValues,
   registerSchema,
 } from "@/features/auth/auth.schema";
-import { registerApi } from "@/features/auth/authApi";
-import { setAuth } from "@/features/auth/authSlice";
+import { registerUser } from "@/features/auth/authSlice";
 import { ROUTE_PATHS } from "@/routes/paths";
 import { useAppDispatch } from "@/store";
-import { handleApiError, handleApiSuccess } from "@/utils/toast";
 
 import {
-  StyledApiErrorAlert,
   StyledAuthCard,
   StyledAuthFooter,
   StyledAuthHeader,
@@ -28,20 +24,11 @@ import {
   StyledLogoBadge,
 } from "./components/AuthStyles";
 
-/**
- * RegisterPage Component
- *
- * @description Màn hình đăng ký tài khoản ChessHH mới (Theme Trắng & Xanh lá chuẩn, icon Lucide React), gọi API POST /auth/register.
- *
- * @example
- * <RegisterPage />
- */
 export const RegisterPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -55,26 +42,19 @@ export const RegisterPage: React.FC = () => {
 
   const onSubmit = async (values: RegisterFormValues) => {
     setIsLoading(true);
-    setApiError(null);
 
     try {
-      const response = await registerApi({
-        username: values.username,
-        email: values.email,
-        password: values.password,
-      });
-
-      handleApiSuccess(AUTH_MESSAGES.REGISTER_SUCCESS);
-      dispatch(
-        setAuth({
-          user: response.user,
-          accessToken: response.accessToken,
+      await dispatch(
+        registerUser({
+          username: values.username,
+          email: values.email,
+          password: values.password,
         }),
-      );
+      ).unwrap();
+
       navigate(ROUTE_PATHS.HOME, { replace: true });
-    } catch (err: unknown) {
-      const errorMsg = handleApiError(err, AUTH_MESSAGES.REGISTER_FAILED);
-      setApiError(errorMsg);
+    } catch {
+      // Toast thông báo lỗi đã được registerUser thunk xử lý tự động
     } finally {
       setIsLoading(false);
     }
@@ -93,13 +73,6 @@ export const RegisterPage: React.FC = () => {
             trở thành Grandmaster!
           </StyledAuthSubtitle>
         </StyledAuthHeader>
-
-        {apiError && (
-          <StyledApiErrorAlert>
-            <AlertCircle size={20} />
-            <span>{apiError}</span>
-          </StyledApiErrorAlert>
-        )}
 
         <Form form={form} onSubmit={onSubmit}>
           <InputField

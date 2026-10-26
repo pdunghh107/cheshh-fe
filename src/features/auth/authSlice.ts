@@ -1,4 +1,8 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 import { AUTH_MESSAGES } from "@/commons/messages";
 import {
@@ -7,6 +11,8 @@ import {
   type LoginPayload,
   logoutApi,
   refreshTokenSilent,
+  registerApi,
+  type RegisterPayload,
   type UserDto,
 } from "@/features/auth/authApi";
 import { setAccessToken } from "@/services/api";
@@ -62,6 +68,25 @@ export const loginUser = createAsyncThunk<
     return data;
   } catch (err: unknown) {
     const errorMsg = handleApiError(err, AUTH_MESSAGES.LOGIN_FAILED);
+    return thunkAPI.rejectWithValue(errorMsg);
+  }
+});
+
+/**
+ * Async Thunk: Đăng ký tài khoản
+ */
+export const registerUser = createAsyncThunk<
+  AuthResponse,
+  RegisterPayload,
+  { rejectValue: string }
+>("auth/registerUser", async (payload, thunkAPI) => {
+  try {
+    const data = await registerApi(payload);
+    setAccessToken(data.accessToken);
+    handleApiSuccess(AUTH_MESSAGES.REGISTER_SUCCESS);
+    return data;
+  } catch (err: unknown) {
+    const errorMsg = handleApiError(err, AUTH_MESSAGES.REGISTER_FAILED);
     return thunkAPI.rejectWithValue(errorMsg);
   }
 });
@@ -137,6 +162,20 @@ export const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload ?? AUTH_MESSAGES.LOGIN_FAILED;
+      })
+      // Register
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload ?? AUTH_MESSAGES.REGISTER_FAILED;
       })
       // Logout
       .addCase(logoutUser.fulfilled, (state) => {

@@ -28,13 +28,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const onSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
 
-    try {
-      await dispatch(loginUser(values)).unwrap();
+    const resultAction = await dispatch(loginUser(values));
+
+    setIsLoading(false);
+
+    if (loginUser.fulfilled.match(resultAction)) {
       onSuccess?.();
-    } catch {
-      // Toast thông báo lỗi đã được xử lý tự động trong thunk / api client
-    } finally {
-      setIsLoading(false);
     }
   };
 

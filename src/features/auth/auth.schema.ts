@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().min(1, "Vui lòng nhập email").email("Địa chỉ email không hợp lệ"),
+  email: z
+    .string()
+    .min(1, "Vui lòng nhập email")
+    .email("Địa chỉ email không hợp lệ"),
   password: z.string().min(6, "Mật khẩu phải từ 6 ký tự trở lên"),
 });
 

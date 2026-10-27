@@ -34,34 +34,6 @@ export const StyledAuthHeader = styled.div`
   text-align: center;
 `;
 
-export const StyledLogoBadge = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 52px;
-  height: 52px;
-  margin-bottom: 16px;
-  background-color: ${colors.primary.lightest};
-  color: ${colors.primary.base};
-  border-radius: 14px;
-  box-shadow: 0 4px 14px rgba(56, 161, 78, 0.15);
-`;
-
-export const StyledAuthTitle = styled.h2`
-  margin: 0 0 8px 0;
-  font-size: ${fontSizes.xxlarge};
-  font-weight: ${fontWeights.bold};
-  color: ${colors.neutral.darkest};
-`;
-
-export const StyledAuthSubtitle = styled.p`
-  margin: 0;
-  font-size: ${fontSizes.base};
-  line-height: 1.5;
-  color: ${colors.neutral.base};
-`;
-
-
 export const StyledAuthFooter = styled.div`
   display: flex;
   justify-content: center;

@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 
 import { LoginPage } from "@/features/auth/LoginPage";
-import { RegisterPage } from "@/features/auth/RegisterPage";
+import { RegisterPage } from "@/features/auth/pages/RegisterPage";
 import { MainPage } from "@/features/dashboard";
 import { ComponentShowcasePage } from "@/features/dev";
 import { PlayChessPage } from "@/features/game/PlayChessPage";

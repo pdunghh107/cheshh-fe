@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Crown, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 
 import { Button } from "@/components/Button";
 import { Form, InputField, InputPassword } from "@/components/Form";
@@ -19,10 +19,7 @@ import {
   StyledAuthFooter,
   StyledAuthHeader,
   StyledAuthPageContainer,
-  StyledAuthSubtitle,
-  StyledAuthTitle,
-  StyledLogoBadge,
-} from "./components/AuthStyles";
+} from "../components/AuthStyles";
 
 export const RegisterPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -43,36 +40,25 @@ export const RegisterPage: React.FC = () => {
   const onSubmit = async (values: RegisterFormValues) => {
     setIsLoading(true);
 
-    try {
-      await dispatch(
-        registerUser({
-          username: values.username,
-          email: values.email,
-          password: values.password,
-        }),
-      ).unwrap();
+    const resultAction = await dispatch(
+      registerUser({
+        username: values.username,
+        email: values.email,
+        password: values.password,
+      }),
+    );
 
+    setIsLoading(false);
+
+    if (registerUser.fulfilled.match(resultAction)) {
       navigate(ROUTE_PATHS.HOME, { replace: true });
-    } catch {
-      // Toast thông báo lỗi đã được registerUser thunk xử lý tự động
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <StyledAuthPageContainer>
       <StyledAuthCard>
-        <StyledAuthHeader>
-          <StyledLogoBadge>
-            <Crown size={28} />
-          </StyledLogoBadge>
-          <StyledAuthTitle>Tạo Tài Khoản Kỳ Thủ</StyledAuthTitle>
-          <StyledAuthSubtitle>
-            Gia nhập cộng đồng cờ vua trực tuyến ChessHH và bắt đầu hành trình
-            trở thành Grandmaster!
-          </StyledAuthSubtitle>
-        </StyledAuthHeader>
+        <StyledAuthHeader></StyledAuthHeader>
 
         <Form form={form} onSubmit={onSubmit}>
           <InputField

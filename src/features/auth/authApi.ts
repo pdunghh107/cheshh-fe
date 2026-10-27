@@ -28,21 +28,17 @@ export interface RegisterPayload {
 export const loginApi = async (
   payload: LoginPayload,
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post<AuthResponse>("/auth/login", {
-    email: payload.email,
-    password: payload.password,
-  });
+  const response = await apiClient.post<AuthResponse>("/auth/login", payload);
   return response.data;
 };
 
 export const registerApi = async (
   payload: RegisterPayload,
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post<AuthResponse>("/auth/register", {
-    username: payload.username,
-    email: payload.email,
-    password: payload.password,
-  });
+  const response = await apiClient.post<AuthResponse>(
+    "/auth/register",
+    payload,
+  );
   return response.data;
 };
 

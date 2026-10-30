@@ -81,7 +81,8 @@ export const RegisterPage: React.FC = () => {
           <InputPassword
             name="password"
             label="Mật khẩu"
-            placeholder="Tối thiểu 6 ký tự..."
+            placeholder="Tối thiểu 8 ký tự..."
+            helperText="Từ 8-50 ký tự, gồm chữ hoa, chữ thường, số & ký tự đặc biệt"
             required
           />
 

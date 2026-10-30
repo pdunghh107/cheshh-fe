@@ -13,16 +13,14 @@ const spinAnimation = keyframes`
   }
 `;
 
-export const StyledSpinner = styled.span<StyledSpinnerProps>`
+export const Spinner = styled.span<StyledSpinnerProps>`
   display: inline-block;
   flex-shrink: 0;
 
-  /* Kích thước đường kính */
   width: ${(props) => `${props.$size}px`};
   height: ${(props) => `${props.$size}px`};
   box-sizing: border-box;
 
-  /* Khuyết 1/4 (3 cạnh có màu, 1 cạnh trong suốt) với độ dày stroke chuẩn 4px */
   border-width: ${(props) => `${props.$thickness}px`};
   border-style: solid;
   border-color: ${(props) => props.$color || colors.primary.base};
@@ -30,12 +28,5 @@ export const StyledSpinner = styled.span<StyledSpinnerProps>`
     typeof props.$radius === "number" ? `${props.$radius}px` : props.$radius};
 
   animation: ${spinAnimation} ${(props) => `${props.$speed}s`} linear infinite;
-  border-top-color: transparent; /* Khuyết 1/4 hình tròn */
-`;
-
-export const StyledLoadingWrapper = styled.div`
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
+  border-top-color: transparent;
 `;

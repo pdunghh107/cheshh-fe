@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 
 import { Logo } from "./Logo";
-import { FIXED_SIDEBAR_ITEMS } from "./Sidebar.constants";
+import {
+  CLOSE_LABEL,
+  FIXED_SIDEBAR_ITEMS,
+  OPEN_LABEL,
+} from "./Sidebar.constants";
 import {
   StyledCollapseButton,
   StyledExpandChevron,
@@ -88,22 +93,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <StyledSidebarContainer className={className} $isCollapsed={isCollapsed}>
-      {/* Header với Logo CHESSHH & nút thu gọn */}
+      {/* Header với Logo CHESSHH */}
       <StyledSidebarHeader>
         <Logo isCollapsed={isCollapsed} size="lg" />
-        <StyledCollapseButton
-          onClick={handleToggleCollapse}
-          aria-label={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
-          title={isCollapsed ? "Mở rộng" : "Thu gọn"}
-        >
-          {isCollapsed ? "❯" : "❮"}
-        </StyledCollapseButton>
       </StyledSidebarHeader>
+
+      {/* Nút thu gọn / mở rộng nằm chính giữa border phải */}
+      <StyledCollapseButton
+        onClick={handleToggleCollapse}
+        aria-label={isCollapsed ? OPEN_LABEL : CLOSE_LABEL}
+        title={isCollapsed ? OPEN_LABEL : CLOSE_LABEL}
+      >
+        {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+      </StyledCollapseButton>
 
       {/* Danh sách các Menu Items */}
       <StyledNavList>
         {items.map((item) => {
-          const hasChildren = Boolean(item.children && item.children.length > 0);
+          const hasChildren = Boolean(
+            item.children && item.children.length > 0,
+          );
           const isExpanded = expandedIds.includes(item.id);
           const isParentActive =
             Boolean(item.path && location.pathname === item.path) ||
@@ -125,10 +134,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {!isCollapsed && (
                   <>
                     <StyledItemLabel>{item.label}</StyledItemLabel>
-                    {item.badge && <StyledItemBadge>{item.badge}</StyledItemBadge>}
+                    {item.badge && (
+                      <StyledItemBadge>{item.badge}</StyledItemBadge>
+                    )}
                     {hasChildren && (
                       <StyledExpandChevron $isExpanded={isExpanded}>
-                        ▶
+                        <ChevronUp size={14} />
                       </StyledExpandChevron>
                     )}
                   </>

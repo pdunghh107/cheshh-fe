@@ -121,3 +121,6 @@ export const getSidebarItems = (): NavItem[] => {
 export const resetSidebarItems = (): void => {
   dynamicSidebarItems = [...FIXED_SIDEBAR_ITEMS];
 };
+
+export const OPEN_LABEL = "Mở rộng thanh điều hướng";
+export const CLOSE_LABEL = "Thu gọn thanh điều hướng";

@@ -88,7 +88,6 @@ apiClient.interceptors.response.use(
       // Tránh lặp vô hạn nếu chính request refresh token bị 401
       if (originalRequest.url?.includes("/auth/refresh-token")) {
         setAccessToken(null);
-        window.location.href = "/login?redirect=true";
         return Promise.reject(error);
       }
 

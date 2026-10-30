@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 import { RouterProvider } from "react-router";
 import styled from "styled-components";
@@ -28,8 +28,12 @@ const LoadingContainer = styled.div`
 function App() {
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.auth);
+  const hasRestoredRef = useRef(false);
 
   useEffect(() => {
+    if (hasRestoredRef.current) return;
+    hasRestoredRef.current = true;
+
     dispatch(restoreAuthSession());
   }, [dispatch]);
 

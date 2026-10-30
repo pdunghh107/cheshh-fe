@@ -13,20 +13,16 @@ export const StyledSidebarContainer = styled.aside<StyledSidebarProps>`
   height: 100vh;
   padding: 16px 12px;
   box-sizing: border-box;
-  overflow-x: hidden;
-  overflow-y: auto;
   user-select: none;
-
   background-color: #ffffff;
   border-right: 1px solid ${colors.neutral.light};
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
-
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 export const StyledSidebarHeader = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 24px;
   padding-bottom: 12px;
@@ -34,22 +30,36 @@ export const StyledSidebarHeader = styled.div`
 `;
 
 export const StyledCollapseButton = styled.button`
+  position: absolute;
+  top: 50%;
+  right: -12px;
+  z-index: 10;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 28px;
-  height: 28px;
-  background-color: transparent;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background-color: #ffffff;
   color: ${colors.neutral.base};
   border: 1px solid ${colors.neutral.light};
-  border-radius: 6px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   transition: all 0.2s ease;
+  transform: translateY(-50%);
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
 
   &:hover {
-    background-color: ${colors.neutral.lightest};
-    color: ${colors.neutral.darkest};
-    border-color: ${colors.neutral.base};
+    background-color: ${colors.primary.lightest};
+    color: ${colors.primary.base};
+    border-color: ${colors.primary.base};
+    box-shadow: 0 2px 8px rgba(56, 161, 78, 0.25);
+    transform: translateY(-50%) scale(1.1);
   }
 `;
 
@@ -58,6 +68,8 @@ export const StyledNavList = styled.nav`
   flex: 1;
   flex-direction: column;
   gap: 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
 `;
 
 export const StyledNavItemButton = styled.div<StyledNavItemProps>`
@@ -119,14 +131,18 @@ export const StyledExpandChevron = styled.span<{ $isExpanded?: boolean }>`
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  font-size: 12px;
   color: ${colors.neutral.base};
   transition: transform 0.2s ease-in-out;
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
 
   ${(props) =>
     props.$isExpanded &&
     css`
-      transform: rotate(90deg);
+      transform: rotate(180deg);
     `}
 `;
 

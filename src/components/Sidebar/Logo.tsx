@@ -1,8 +1,12 @@
 import React from "react";
+import { useNavigate } from "react-router";
 import styled from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
+import { ROUTE_PATHS } from "@/routes/paths";
+
+import { LOGO_FONT_SIZES, type LogoSize } from "./Sidebar.constants";
 
 export interface LogoProps {
   className?: string;
@@ -10,7 +14,7 @@ export interface LogoProps {
   size?: "md" | "lg" | "xl";
 }
 
-const StyledLogoWrapper = styled.div<{ $isCollapsed?: boolean }>`
+const Wrapper = styled.div<{ $isCollapsed?: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
@@ -19,7 +23,7 @@ const StyledLogoWrapper = styled.div<{ $isCollapsed?: boolean }>`
   cursor: pointer;
 `;
 
-const StyledLogoIcon = styled.div`
+const LogoIcon = styled.div`
   display: flex;
   flex-shrink: 0;
   justify-content: center;
@@ -34,14 +38,9 @@ const StyledLogoIcon = styled.div`
   box-shadow: 0 4px 10px rgba(56, 161, 78, 0.25);
 `;
 
-const StyledLogoText = styled.span<{ $size: "md" | "lg" | "xl" }>`
+const LogoText = styled.span<{ $size: LogoSize }>`
   font-family: inherit;
-  font-size: ${(props) =>
-    props.$size === "md"
-      ? fontSizes.large
-      : props.$size === "lg"
-        ? fontSizes.xlarge
-        : fontSizes.xxlarge};
+  font-size: ${(props) => LOGO_FONT_SIZES[props.$size]};
   font-weight: ${fontWeights.black};
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -52,30 +51,36 @@ const StyledLogoText = styled.span<{ $size: "md" | "lg" | "xl" }>`
   }
 `;
 
-/**
- * Logo Component
- *
- * @description Hiển thị logo thương hiệu CHESSHH in hoa kèm icon biểu tượng cờ vua
- *
- * @example
- * import { Logo } from '@/components/Sidebar/Logo';
- *
- * <Logo size="lg" />
- * <Logo isCollapsed={true} />
- */
 export const Logo: React.FC<LogoProps> = ({
   className,
   isCollapsed = false,
   size = "lg",
 }) => {
+  const navigate = useNavigate();
+
+  const onClick = () => {
+    navigate(ROUTE_PATHS.HOME);
+  };
+
   return (
-    <StyledLogoWrapper className={className} $isCollapsed={isCollapsed}>
-      <StyledLogoIcon>♞</StyledLogoIcon>
+    <Wrapper
+      className={className}
+      $isCollapsed={isCollapsed}
+      onClick={onClick}
+      // role="button"
+      // tabIndex={0}
+      // onKeyDown={(e) => {
+      //   if (e.key === "Enter" || e.key === " ") {
+      //     navigate(ROUTE_PATHS.HOME);
+      //   }
+      // }}
+    >
+      <LogoIcon>♞</LogoIcon>
       {!isCollapsed && (
-        <StyledLogoText $size={size}>
+        <LogoText $size={size}>
           CHESS<span>HH</span>
-        </StyledLogoText>
+        </LogoText>
       )}
-    </StyledLogoWrapper>
+    </Wrapper>
   );
 };

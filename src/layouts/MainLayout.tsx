@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
+import { ROUTE_PATHS } from "@/routes/paths";
 
 import {
   StyledContentContainer,
@@ -26,6 +27,11 @@ import {
  */
 export const MainLayout: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const location = useLocation();
+
+  const isPlayPage =
+    location.pathname === ROUTE_PATHS.PLAY ||
+    location.pathname.startsWith("/game/");
 
   return (
     <StyledLayoutRoot>
@@ -41,7 +47,7 @@ export const MainLayout: React.FC = () => {
         <Header />
 
         {/* Dynamic Page Outlet */}
-        <StyledContentContainer>
+        <StyledContentContainer $noPadding={isPlayPage}>
           <Outlet />
         </StyledContentContainer>
       </StyledMainWrapper>

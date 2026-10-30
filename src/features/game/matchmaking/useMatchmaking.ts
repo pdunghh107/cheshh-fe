@@ -9,17 +9,17 @@ import {
   joinMatchmakingApi,
   sendWsCancelQueue,
   sendWsJoinQueue,
-  subscribeMatchmakingStatus,
+  subscribeMatchFound,
 } from "./matchmaking.api";
 import type {
+  MatchFoundResponse,
   MatchmakingStatus,
-  MatchmakingStatusResponse,
 } from "./matchmaking.types";
 
 export interface UseMatchmakingReturn {
   status: MatchmakingStatus;
   isSearching: boolean;
-  matchData: MatchmakingStatusResponse | null;
+  matchData: MatchFoundResponse | null;
   searchDuration: number;
   joinQueue: (useWsAction?: boolean) => Promise<void>;
   cancelQueue: (useWsAction?: boolean) => Promise<void>;
@@ -29,7 +29,7 @@ export interface UseMatchmakingReturn {
  * useMatchmaking Hook
  *
  * @description Hook quản lý toàn bộ luồng tìm trận đấu (Matchmaking) cờ vua thời gian thực.
- * Tích hợp gọi REST API khởi tạo, tự động kích hoạt WebSocket và subscribe `/user/queue/matchmaking/status`.
+ * Tích hợp gọi REST API khởi tạo, tự động kích hoạt WebSocket và subscribe `/user/queue/matchmaking`.
  *
  * @example
  * const { isSearching, searchDuration, joinQueue, cancelQueue } = useMatchmaking();
@@ -39,8 +39,7 @@ export interface UseMatchmakingReturn {
 export const useMatchmaking = (): UseMatchmakingReturn => {
   const navigate = useNavigate();
   const [status, setStatus] = useState<MatchmakingStatus>("IDLE");
-  const [matchData, setMatchData] =
-    useState<MatchmakingStatusResponse | null>(null);
+  const [matchData, setMatchData] = useState<MatchFoundResponse | null>(null);
   const [searchDuration, setSearchDuration] = useState(0);
 
   // Bộ đếm thời gian tìm trận
@@ -57,23 +56,17 @@ export const useMatchmaking = (): UseMatchmakingReturn => {
     };
   }, [status]);
 
-  // Kết nối WebSocket và Subscribe /user/queue/matchmaking/status
+  // Kết nối WebSocket và Subscribe /user/queue/matchmaking
   useEffect(() => {
     wsService.activate();
 
-    const unsubscribe = subscribeMatchmakingStatus((data) => {
-      setStatus(data.status);
+    const unsubscribe = subscribeMatchFound((data) => {
+      setStatus("MATCHED");
       setMatchData(data);
 
-      if (data.status === "MATCHED") {
-        toast.success("Đã tìm thấy đối thủ! Đang vào ván đấu...");
-        if (data.gameId) {
-          navigate(`/game/${data.gameId}`);
-        }
-      } else if (data.status === "CANCELLED") {
-        toast("Đã hủy tìm kiếm trận đấu.");
-      } else if (data.status === "ERROR") {
-        toast.error(data.message || "Lỗi trong quá trình tìm trận");
+      toast.success("Ghép trận thành công! Đang vào bàn cờ...");
+      if (data.roomId) {
+        navigate(`/game/${data.roomId}`);
       }
     });
 
@@ -90,8 +83,9 @@ export const useMatchmaking = (): UseMatchmakingReturn => {
         sendWsJoinQueue();
       } else {
         const response = await joinMatchmakingApi();
-        setStatus(response.status);
-        setMatchData(response);
+        if (response.status) {
+          setStatus(response.status);
+        }
       }
     } catch (error: unknown) {
       setStatus("ERROR");
@@ -107,10 +101,10 @@ export const useMatchmaking = (): UseMatchmakingReturn => {
       if (useWsAction) {
         sendWsCancelQueue();
       } else {
-        const response = await cancelMatchmakingApi();
-        setStatus(response.status);
-        setMatchData(response);
+        await cancelMatchmakingApi();
       }
+      setStatus("CANCELLED");
+      toast("Đã hủy tìm kiếm trận đấu.");
     } catch (error: unknown) {
       const errorMsg =
         error instanceof Error ? error.message : "Lỗi khi hủy tìm trận";

@@ -7,16 +7,21 @@ import { type CoordThemeProps, type SquareThemeProps } from "./Board.types";
 
 export const StyledBoardContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(8, 70px);
-  grid-template-rows: repeat(8, 70px);
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: min(calc(100vh - 200px), calc(100vw - 680px), 640px);
+  min-width: 320px;
+  height: min(calc(100vh - 200px), calc(100vw - 680px), 640px);
+  min-height: 320px;
   overflow: hidden;
   border: 4px solid ${colors.neutral.dark};
   border-radius: 8px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  aspect-ratio: 1 / 1;
 
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(8, 40px);
-    grid-template-rows: repeat(8, 40px);
+  @media (max-width: 960px) {
+    width: min(90vw, 520px);
+    height: min(90vw, 520px);
   }
 `;
 

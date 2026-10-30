@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/Button";
+import { useMatchmaking } from "@/features/game/matchmaking/useMatchmaking";
 import { ROUTE_PATHS } from "@/routes/paths";
 import { useAppSelector } from "@/store";
 
@@ -83,36 +84,15 @@ export const MainPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [selectedModeId, setSelectedModeId] = useState<string>("rapid");
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [searchSeconds, setSearchSeconds] = useState<number>(0);
-
-  // Giả lập timer đếm giây khi đang tìm trận
-  useEffect(() => {
-    if (!isSearching) return;
-
-    const timer = setInterval(() => {
-      setSearchSeconds((prev) => {
-        // Giả lập sau 4-5 giây tìm thấy trận đấu
-        if (prev >= 4) {
-          setIsSearching(false);
-          navigate(ROUTE_PATHS.PLAY);
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isSearching, navigate]);
+  const { isSearching, searchDuration, joinQueue, cancelQueue } =
+    useMatchmaking();
 
   const handleStartMatchmaking = () => {
-    setSearchSeconds(0);
-    setIsSearching(true);
+    joinQueue();
   };
 
   const handleCancelMatchmaking = () => {
-    setIsSearching(false);
-    setSearchSeconds(0);
+    cancelQueue();
   };
 
   const selectedMode = GAME_MODES.find((m) => m.id === selectedModeId);
@@ -188,7 +168,12 @@ export const MainPage: React.FC = () => {
             <h3 style={{ margin: 0, fontSize: "20px" }}>
               Đang tìm đối thủ xứng tầm ({selectedMode?.name})...
             </h3>
-            <StyledTimerCount>00:0{searchSeconds}</StyledTimerCount>
+            <StyledTimerCount>
+              {Math.floor(searchDuration / 60)
+                .toString()
+                .padStart(2, "0")}
+              :{(searchDuration % 60).toString().padStart(2, "0")}
+            </StyledTimerCount>
             <Button
               variant="danger"
               size="md"

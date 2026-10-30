@@ -55,7 +55,7 @@ export const Piece: React.FC<PieceProps> = ({ type, color, className }) => {
 export default Piece;
 
 const StyledPieceSymbol = styled.span<{ $isBlack: boolean }>`
-  font-size: 42px;
+  font-size: min(42px, 6vw);
   line-height: 1;
   user-select: none;
   color: ${(props) => (props.$isBlack ? "#181a1b" : "#ffffff")};

@@ -5,17 +5,26 @@ export type MatchmakingStatus =
   | "CANCELLED"
   | "ERROR";
 
-export interface OpponentInfo {
-  id: string;
-  username: string;
-  rating: number;
-  avatarUrl?: string | null;
+export interface MatchmakingPlayerInfo {
+  userId: string;
+  elo: number;
 }
 
+/**
+ * Payload WebSocket STOMP backend gửi về khi ghép trận thành công
+ * Destination: /user/queue/matchmaking
+ */
+export interface MatchFoundResponse {
+  roomId: string;
+  whitePlayer: MatchmakingPlayerInfo;
+  blackPlayer: MatchmakingPlayerInfo;
+  matchedAt: string;
+}
+
+/**
+ * Response trả về khi gọi REST API POST /api/v1/chess/matchmaking/join hoặc cancel
+ */
 export interface MatchmakingStatusResponse {
   status: MatchmakingStatus;
   message?: string;
-  gameId?: string;
-  opponent?: OpponentInfo;
-  color?: "WHITE" | "BLACK";
 }

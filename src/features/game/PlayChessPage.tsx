@@ -1,21 +1,28 @@
 import React from "react";
-import { useNavigate } from "react-router";
+import { useParams } from "react-router";
 import styled from "styled-components";
 
 import { colors } from "@/commons/colors";
 import { fontSizes, fontWeights } from "@/commons/fonts";
-import { logoutUser } from "@/features/auth/authSlice";
 import { Board } from "@/features/game/components/board/Board";
 import { PromotionBoard } from "@/features/game/components/promotion/PromotionBoard";
-import { useChessGame } from "@/features/game/hooks/useChessGame";
-import { ROUTE_PATHS } from "@/routes/paths";
-import { useAppDispatch, useAppSelector } from "@/store";
+import { useRealtimeChessGame } from "@/features/game/hooks/useRealtimeChessGame";
+import { useAppSelector } from "@/store";
 
+/**
+ * Format milliseconds sang chuỗi mm:ss
+ */
+const formatTime = (timeMs: number): string => {
+  const totalSeconds = Math.max(0, Math.floor(timeMs / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+};
 
 /**
  * PlayChessPage Component
  *
- * @description Màn hình chơi cờ vua trực tuyến (Protected Route demo), hiển thị bàn cờ 64 ô qua Board Component, thông tin kỳ thủ và đồng hồ đếm ngược.
+ * @description Màn hình chơi cờ vua trực tuyến thời gian thực (Realtime), đồng bộ nước đi và đồng hồ đếm ngược với Backend WebSocket STOMP.
  *
  * @example
  * // Sử dụng trong ProtectedRoute:
@@ -25,78 +32,64 @@ import { useAppDispatch, useAppSelector } from "@/store";
  *   <PlayChessPage />
  * </ProtectedRoute>
  */
-
 export const PlayChessPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const { gameId } = useParams<{ gameId?: string }>();
   const user = useAppSelector((state) => state.auth.user);
 
-  // Sử dụng custom hook tự viết useChessGame để quản lý bàn cờ
+  // Hook kết nối WebSocket STOMP, đồng bộ nước đi và countdown time
   const {
     position,
     turn,
     selectedSquare,
     validMoves,
     lastMove,
-    checkSquare,
     history,
     pendingPromotion,
     setPendingPromotion,
+    whiteTimeMs,
+    blackTimeMs,
+    gameStatus,
+    playerColor,
     handleSquareClick,
     makeMove,
-    resetGame,
-  } = useChessGame();
+  } = useRealtimeChessGame({
+    roomId: gameId,
+    currentUserId: user?.id,
+  });
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logoutUser()).unwrap();
-      navigate(ROUTE_PATHS.LOGIN);
-    } catch (error) {
-      console.error("Lỗi khi đăng xuất:", error);
-    }
-  };
-
+  const isWhitePlayer = playerColor === "white";
+  const myTimeMs = isWhitePlayer ? whiteTimeMs : blackTimeMs;
+  const opponentTimeMs = isWhitePlayer ? blackTimeMs : whiteTimeMs;
+  const isMyTurn = turn === playerColor;
 
   return (
     <StyledGameLayout>
-      {/* Top Navbar */}
-      <StyledNavbar>
-        <StyledBrand>
-          <span style={{ fontSize: "24px" }}>♟</span> ChessHH Arena
-        </StyledBrand>
-        <StyledUserSection>
-          <StyledPlayerBadge>
-            <span>👤</span>
-            <strong>{user?.username || "Grandmaster"}</strong>
-            <StyledEloTag>Elo: {user?.rating || 1800}</StyledEloTag>
-          </StyledPlayerBadge>
-          <StyledLogoutBtn onClick={handleLogout}>Đăng xuất</StyledLogoutBtn>
-        </StyledUserSection>
-      </StyledNavbar>
-
       {/* Main Game Stage */}
       <StyledStageContainer>
         {/* Left / Center: Chessboard Area */}
         <StyledBoardWrapper>
-          {/* Opponent Card */}
+          {/* Opponent Card (Top) */}
           <StyledPlayerBar>
-            <StyledAvatar $color={colors.red.base}>🤖</StyledAvatar>
+            <StyledAvatar $color={colors.red.base}>♟</StyledAvatar>
             <StyledInfo>
-              <StyledName>Magnus_Bot (AI Grandmaster)</StyledName>
-              <StyledElo>Elo 2800</StyledElo>
+              <StyledName>
+                {isWhitePlayer ? "Đối thủ (Quân Đen)" : "Đối thủ (Quân Trắng)"}
+              </StyledName>
+              <StyledElo>Phòng: {gameId || "Luyện tập"}</StyledElo>
             </StyledInfo>
-            <StyledClock>10:00</StyledClock>
+            <StyledClock $isActive={turn !== playerColor && gameStatus === "ONGOING"}>
+              {formatTime(opponentTimeMs)}
+            </StyledClock>
           </StyledPlayerBar>
 
           {/* Reusable Chessboard Component with Promotion Overlay */}
           <div style={{ position: "relative", width: "fit-content" }}>
             <Board
-              orientation="white"
+              orientation={playerColor}
               position={position}
               selectedSquare={selectedSquare}
               validMoves={validMoves}
               lastMove={lastMove}
-              checkSquare={checkSquare}
               onSquareClick={handleSquareClick}
             />
 
@@ -104,7 +97,7 @@ export const PlayChessPage: React.FC = () => {
               <PromotionBoard
                 targetSquare={pendingPromotion.to}
                 color={pendingPromotion.color}
-                orientation="white"
+                orientation={playerColor}
                 onSelect={(pieceType) => {
                   makeMove(pendingPromotion.from, pendingPromotion.to, pieceType);
                   setPendingPromotion(null);
@@ -114,14 +107,18 @@ export const PlayChessPage: React.FC = () => {
             )}
           </div>
 
-          {/* Current Player Card */}
+          {/* Current Player Card (Bottom) */}
           <StyledPlayerBar>
             <StyledAvatar $color={colors.primary.base}>♟</StyledAvatar>
             <StyledInfo>
-              <StyledName>{user?.username} (Bạn)</StyledName>
-              <StyledElo>Elo {user?.rating}</StyledElo>
+              <StyledName>
+                {user?.username || "Bạn"} ({playerColor === "white" ? "Quân Trắng" : "Quân Đen"})
+              </StyledName>
+              <StyledElo>Elo: {user?.rating ?? 1200}</StyledElo>
             </StyledInfo>
-            <StyledClock $isActive={turn === "white"}>09:45</StyledClock>
+            <StyledClock $isActive={isMyTurn && gameStatus === "ONGOING"}>
+              {formatTime(myTimeMs)}
+            </StyledClock>
           </StyledPlayerBar>
         </StyledBoardWrapper>
 
@@ -130,13 +127,19 @@ export const PlayChessPage: React.FC = () => {
           <StyledSidebarHeader>Trạng thái ván đấu</StyledSidebarHeader>
           <StyledMatchMeta>
             <StyledMetaRow>
-              <span>Thời gian:</span>
-              <strong>10 phút (Rapid)</strong>
+              <span>Trạng thái:</span>
+              <strong style={{ color: gameStatus === "ONGOING" ? colors.primary.base : colors.danger.base }}>
+                {gameStatus === "ONGOING" ? "Đang thi đấu" : gameStatus}
+              </strong>
             </StyledMetaRow>
             <StyledMetaRow>
-              <span>Lượt đi:</span>
-              <strong style={{ color: turn === "white" ? colors.primary.light : colors.warning.light }}>
-                {turn === "white" ? "Quân Trắng (Bạn)" : "Quân Đen (Đối thủ)"}
+              <span>Phe của bạn:</span>
+              <strong>{playerColor === "white" ? "Trắng (Đi trước)" : "Đen (Đi sau)"}</strong>
+            </StyledMetaRow>
+            <StyledMetaRow>
+              <span>Lượt đi hiện tại:</span>
+              <strong style={{ color: isMyTurn ? colors.primary.base : colors.warning.base }}>
+                {turn === "white" ? "Quân Trắng" : "Quân Đen"} {isMyTurn ? "(Lượt của bạn)" : "(Đối thủ)"}
               </strong>
             </StyledMetaRow>
           </StyledMatchMeta>
@@ -158,7 +161,7 @@ export const PlayChessPage: React.FC = () => {
                       {m.piece.type.toUpperCase()}: {m.from} → {m.to}
                     </code>
                     {m.captured && (
-                      <span style={{ color: colors.danger.light, fontSize: "11px" }}>
+                      <span style={{ color: colors.danger.base, fontSize: "11px" }}>
                         (Ăn {m.captured.type.toUpperCase()})
                       </span>
                     )}
@@ -169,8 +172,8 @@ export const PlayChessPage: React.FC = () => {
           </StyledMoveHistory>
 
           <StyledActionButtons>
-            <StyledActionButton $variant="draw" onClick={resetGame}>
-              Ván mới
+            <StyledActionButton $variant="draw" onClick={() => window.location.reload()}>
+              Làm mới ván
             </StyledActionButton>
             <StyledActionButton $variant="resign">Đầu hàng</StyledActionButton>
           </StyledActionButtons>
@@ -185,70 +188,12 @@ export default PlayChessPage;
 // Styled Components
 const StyledGameLayout = styled.div`
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: ${colors.neutral.darkest};
-  color: ${colors.neutral.lightest};
-`;
-
-const StyledNavbar = styled.nav`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 60px;
-  padding: 0 24px;
-  background-color: ${colors.neutral.dark};
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-`;
-
-const StyledBrand = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: ${fontSizes.large};
-  font-weight: ${fontWeights.bold};
-  color: ${colors.primary.light};
-`;
-
-const StyledUserSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-const StyledPlayerBadge = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  font-size: ${fontSizes.small};
-  background-color: rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-`;
-
-const StyledEloTag = styled.span`
-  padding: 2px 6px;
-  font-weight: ${fontWeights.semibold};
-  background-color: ${colors.primary.darkest};
-  color: ${colors.primary.light};
-  border-radius: 4px;
-`;
-
-const StyledLogoutBtn = styled.button`
-  padding: 6px 12px;
-  font-size: ${fontSizes.small};
-  background: transparent;
-  color: ${colors.neutral.light};
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: ${colors.danger.darkest};
-    color: ${colors.danger.light};
-    border-color: ${colors.danger.dark};
-  }
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: ${colors.neutral.lightest};
+  color: ${colors.neutral.darkest};
 `;
 
 const StyledStageContainer = styled.main`
@@ -257,11 +202,15 @@ const StyledStageContainer = styled.main`
   justify-content: center;
   align-items: flex-start;
   gap: 32px;
-  padding: 32px;
+  width: 100%;
+  height: 100%;
+  padding: 32px 24px;
+  box-sizing: border-box;
 
   @media (max-width: 960px) {
     flex-direction: column;
     align-items: center;
+    overflow-y: auto;
   }
 `;
 
@@ -276,9 +225,11 @@ const StyledPlayerBar = styled.div`
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background-color: ${colors.neutral.dark};
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: #ffffff;
+  color: ${colors.neutral.darkest};
+  border: 1px solid ${colors.neutral.light};
   border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 `;
 
 const StyledAvatar = styled.div<{ $color: string }>`
@@ -301,11 +252,12 @@ const StyledInfo = styled.div`
 const StyledName = styled.span`
   font-size: ${fontSizes.base};
   font-weight: ${fontWeights.bold};
+  color: ${colors.neutral.darkest};
 `;
 
 const StyledElo = styled.span`
   font-size: ${fontSizes.small};
-  color: ${colors.neutral.light};
+  color: ${colors.neutral.base};
 `;
 
 const StyledClock = styled.div<{ $isActive?: boolean }>`
@@ -314,24 +266,32 @@ const StyledClock = styled.div<{ $isActive?: boolean }>`
   font-size: ${fontSizes.xlarge};
   font-weight: ${fontWeights.bold};
   background-color: ${(props) =>
-    props.$isActive ? colors.primary.darkest : colors.neutral.darkest};
+    props.$isActive ? colors.primary.lightest : colors.neutral.lightest};
   color: ${(props) =>
-    props.$isActive ? colors.primary.light : colors.neutral.light};
+    props.$isActive ? colors.primary.darkest : colors.neutral.darkest};
   border: 1px solid
-    ${(props) => (props.$isActive ? colors.primary.dark : "transparent")};
+    ${(props) => (props.$isActive ? colors.primary.light : colors.neutral.light)};
   border-radius: 6px;
 `;
 
 const StyledControlSidebar = styled.aside`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   width: 320px;
-  padding: 24px;
-  background-color: ${colors.neutral.dark};
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  max-height: min(calc(100vh - 120px), 740px);
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: ${colors.neutral.darkest};
+  border: 1px solid ${colors.neutral.light};
   border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+
+  @media (max-width: 960px) {
+    width: min(90vw, 520px);
+    max-height: none;
+  }
 `;
 
 const StyledSidebarHeader = styled.h3`
@@ -339,7 +299,8 @@ const StyledSidebarHeader = styled.h3`
   padding-bottom: 12px;
   font-size: ${fontSizes.large};
   font-weight: ${fontWeights.bold};
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: ${colors.neutral.darkest};
+  border-bottom: 1px solid ${colors.neutral.lightest};
 `;
 
 const StyledMatchMeta = styled.div`
@@ -352,7 +313,11 @@ const StyledMatchMeta = styled.div`
 const StyledMetaRow = styled.div`
   display: flex;
   justify-content: space-between;
-  color: ${colors.neutral.light};
+  color: ${colors.neutral.base};
+
+  strong {
+    color: ${colors.neutral.darkest};
+  }
 `;
 
 const StyledMoveHistory = styled.div`
@@ -361,31 +326,35 @@ const StyledMoveHistory = styled.div`
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  background-color: ${colors.neutral.darkest};
+  background-color: ${colors.neutral.lightest};
+  border: 1px solid ${colors.neutral.light};
   border-radius: 8px;
 `;
 
 const StyledHistoryHeader = styled.span`
   font-size: ${fontSizes.small};
   font-weight: ${fontWeights.semibold};
-  color: ${colors.neutral.light};
+  color: ${colors.neutral.dark};
 `;
 
 const StyledMovesList = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
   font-size: ${fontSizes.small};
 `;
 
 const StyledMoveRow = styled.div`
   display: flex;
   gap: 16px;
-  color: ${colors.neutral.light};
+  color: ${colors.neutral.base};
 
   code {
     font-weight: ${fontWeights.semibold};
-    color: ${colors.neutral.lightest};
+    color: ${colors.neutral.darkest};
   }
 `;
 
@@ -400,17 +369,19 @@ const StyledActionButton = styled.button<{ $variant: "draw" | "resign" }>`
   font-size: ${fontSizes.small};
   font-weight: ${fontWeights.semibold};
   background-color: ${(props) =>
-    props.$variant === "draw" ? colors.warning.darkest : colors.danger.darkest};
+    props.$variant === "draw" ? colors.warning.lightest : colors.danger.lightest};
   color: ${(props) =>
-    props.$variant === "draw" ? colors.warning.light : colors.danger.light};
+    props.$variant === "draw" ? colors.warning.darkest : colors.danger.darkest};
   border: 1px solid
     ${(props) =>
-      props.$variant === "draw" ? colors.warning.dark : colors.danger.dark};
+      props.$variant === "draw" ? colors.warning.light : colors.danger.light};
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    opacity: 0.85;
+    background-color: ${(props) =>
+      props.$variant === "draw" ? colors.warning.light : colors.danger.light};
+    opacity: 0.9;
   }
 `;

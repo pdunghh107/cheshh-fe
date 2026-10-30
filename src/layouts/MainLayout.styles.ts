@@ -20,11 +20,12 @@ export const StyledMainWrapper = styled.div`
   overflow: hidden;
 `;
 
-export const StyledContentContainer = styled.main`
+export const StyledContentContainer = styled.main<{ $noPadding?: boolean }>`
   flex: 1;
-  padding: 28px;
+  padding: ${({ $noPadding }) => ($noPadding ? "0" : "28px")};
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
+  background-color: ${({ $noPadding }) => ($noPadding ? "transparent" : colors.neutral.lightest)};
 `;
 

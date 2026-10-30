@@ -1,27 +1,32 @@
 import { apiClient } from "@/services/api";
 import { wsService } from "@/services/websocket";
 
-import type { MatchmakingStatusResponse } from "./matchmaking.types";
+import type {
+  MatchFoundResponse,
+  MatchmakingStatusResponse,
+} from "./matchmaking.types";
 
 /**
  * 1. REST API: Gọi POST /chess/matchmaking/join qua Kong Gateway (prefix /api/v1)
  */
-export const joinMatchmakingApi = async (): Promise<MatchmakingStatusResponse> => {
-  const response = await apiClient.post<MatchmakingStatusResponse>(
-    "/chess/matchmaking/join",
-  );
-  return response.data;
-};
+export const joinMatchmakingApi =
+  async (): Promise<MatchmakingStatusResponse> => {
+    const response = await apiClient.post<MatchmakingStatusResponse>(
+      "/chess/matchmaking/join",
+    );
+    return response.data;
+  };
 
 /**
  * 2. REST API: Gọi POST /chess/matchmaking/cancel
  */
-export const cancelMatchmakingApi = async (): Promise<MatchmakingStatusResponse> => {
-  const response = await apiClient.post<MatchmakingStatusResponse>(
-    "/chess/matchmaking/cancel",
-  );
-  return response.data;
-};
+export const cancelMatchmakingApi =
+  async (): Promise<MatchmakingStatusResponse> => {
+    const response = await apiClient.post<MatchmakingStatusResponse>(
+      "/chess/matchmaking/cancel",
+    );
+    return response.data;
+  };
 
 /**
  * 3. WebSocket STOMP: Gửi action tham gia hàng chờ qua WebSocket
@@ -40,14 +45,15 @@ export const sendWsCancelQueue = (): void => {
 };
 
 /**
- * 5. WebSocket STOMP: Đăng ký nhận thông báo trạng thái Matchmaking theo User
- * Destination: /user/queue/matchmaking/status
+ * 5. WebSocket STOMP: Đăng ký nhận thông báo ghép trận thành công
+ * Backend: messagingTemplate.convertAndSendToUser(userId, "/queue/matchmaking", matchResponse)
+ * Destination: /user/queue/matchmaking
  */
-export const subscribeMatchmakingStatus = (
-  callback: (response: MatchmakingStatusResponse) => void,
+export const subscribeMatchFound = (
+  callback: (response: MatchFoundResponse) => void,
 ): (() => void) => {
-  return wsService.subscribe<MatchmakingStatusResponse>(
-    "/user/queue/matchmaking/status",
+  return wsService.subscribe<MatchFoundResponse>(
+    "/user/queue/matchmaking",
     callback,
   );
 };

@@ -1,3 +1,4 @@
+import { fontSizes } from "@/commons/fonts";
 import { ROUTE_PATHS } from "@/routes/paths";
 
 import type { NavItem } from "./Sidebar.types";
@@ -124,3 +125,11 @@ export const resetSidebarItems = (): void => {
 
 export const OPEN_LABEL = "Mở rộng thanh điều hướng";
 export const CLOSE_LABEL = "Thu gọn thanh điều hướng";
+
+export type LogoSize = "md" | "lg" | "xl";
+
+export const LOGO_FONT_SIZES: Record<LogoSize, string> = {
+  md: fontSizes.large,
+  lg: fontSizes.xlarge,
+  xl: fontSizes.xxlarge,
+};
